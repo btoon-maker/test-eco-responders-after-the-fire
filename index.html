@@ -70,12 +70,12 @@
     }
     details summary { cursor:pointer; font-weight: 700; color:#1f3b34; }
 
-    /* ---------- SMALL TOP-RIGHT PANEL (button only) ---------- */
+    /* ---------- TOP-RIGHT PANEL (Pause + Resume box ALWAYS present) ---------- */
     .savePanel {
       position: fixed;
       top: 12px;
       right: 12px;
-      width: 220px;
+      width: 250px;
       max-width: calc(100vw - 24px);
       background: #2c3e50;
       color: #fff;
@@ -95,8 +95,34 @@
       cursor: pointer;
       background: #16a085;
       color: #fff;
-      font-weight: 700;
+      font-weight: 800;
     }
+    .savePanel label { display:block; margin-top: 10px; font-weight: 700; opacity: 0.95; }
+    .savePanel input {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.22);
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      margin-top: 6px;
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+    }
+    .savePanel input::placeholder { color: rgba(255,255,255,0.65); }
+    .savePanel .twoBtns { display:flex; gap: 8px; margin-top: 8px; }
+    .savePanel .smallBtn {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      font-weight: 800;
+    }
+    .savePanel .smallBtn.primary { background:#ffd166; color:#2b2b2b; }
     .savePanel .status { margin-top: 8px; opacity: 0.9; font-size: 0.8rem; white-space: pre-wrap; }
 
     /* ---------- Center Modal ---------- */
@@ -158,7 +184,7 @@
       padding: 10px 12px;
       border-radius: 12px;
       cursor:pointer;
-      font-weight: 700;
+      font-weight: 800;
     }
     .modal .btnSecondary {
       background: transparent;
@@ -167,7 +193,7 @@
       padding: 10px 12px;
       border-radius: 12px;
       cursor:pointer;
-      font-weight: 700;
+      font-weight: 800;
     }
     .modal .btnDanger {
       background: #b42318;
@@ -176,18 +202,7 @@
       padding: 10px 12px;
       border-radius: 12px;
       cursor:pointer;
-      font-weight: 700;
-    }
-
-    .modal .fieldLabel { display:block; margin-top: 10px; font-weight: 700; color:#1f3b34; }
-    .modal input {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid #cfd8d5;
-      padding: 10px 12px;
-      font-size: 1rem;
-      box-sizing: border-box;
-      margin-top: 6px;
+      font-weight: 800;
     }
 
     .qrWrapModal {
@@ -229,7 +244,7 @@
       padding: 10px 14px;
       border-radius: 12px;
       cursor:pointer;
-      font-weight: 800;
+      font-weight: 900;
       font-size: 1rem;
     }
     .exportMsg {
@@ -240,7 +255,7 @@
 
     /* keep content from hiding behind fixed top panel on small screens */
     @media (max-width: 520px) {
-      main { padding-top: 6.75rem; }
+      main { padding-top: 7.25rem; }
     }
   </style>
 </head>
@@ -251,10 +266,19 @@
   <div class="small">Prototype • saves progress • Resume Code + QR</div>
 </header>
 
-<!-- TOP-RIGHT PANEL -->
+<!-- TOP-RIGHT PANEL (ALWAYS) -->
 <section class="savePanel" aria-label="Pause and Resume Panel">
   <h4>Pause</h4>
   <button class="miniBtn" id="pauseResumeBtn">Pause & Resume Later</button>
+
+  <label for="resumeInputTop">Paste Resume Code</label>
+  <input id="resumeInputTop" type="text" placeholder="Paste code here..." />
+
+  <div class="twoBtns">
+    <button class="smallBtn primary" id="resumeTopBtn">Resume</button>
+    <button class="smallBtn" id="clearTopBtn">Clear</button>
+  </div>
+
   <div class="status" id="saveStatus">Ready.</div>
 </section>
 
@@ -266,21 +290,12 @@
 
     <div class="grid">
       <div>
-        <div class="fieldLabel">Resume Code</div>
         <div class="codeBox" id="resumeCodeBox"></div>
 
         <div class="btnRow">
           <button class="btnPrimary" id="copyCodeBtn">Copy Code</button>
           <button class="btnSecondary" id="closeModalBtn">Close</button>
           <button class="btnDanger" id="resetBtn" title="Reset for testing">Reset</button>
-        </div>
-
-        <label class="fieldLabel" for="resumeInput">Paste a Resume Code to continue</label>
-        <input id="resumeInput" type="text" placeholder="Paste code here..." />
-
-        <div class="btnRow">
-          <button class="btnPrimary" id="resumeBtn">Resume</button>
-          <button class="btnSecondary" id="clearResumeInputBtn">Clear</button>
         </div>
 
         <div class="modalStatus" id="modalStatus"></div>
@@ -354,7 +369,7 @@
     </div>
   </section>
 
-  <!-- ============ MISSION START (AFTER BEGIN MISSION) ============ -->
+  <!-- ============ MISSION START (APPEARS BELOW ON CLICK) ============ -->
   <section id="missionStart" class="hidden">
     <div class="split">
       <div class="placeholder" aria-label="Image placeholder">
@@ -386,7 +401,7 @@
     </div>
   </section>
 
-  <!-- ============ BRANCH: NOAA PATH ============ -->
+  <!-- ============ BRANCH: NOAA PATH (APPEARS BELOW) ============ -->
   <section id="branchNoaa" class="hidden">
     <h2>NOAA Data Path</h2>
     <p>
@@ -404,12 +419,14 @@
     <p class="small"><strong>Prompt:</strong> Predict what might happen to the forest next year if rainfall stays low and temperatures stay high. Use data to support your prediction.</p>
     <textarea data-save="noaa_prediction" placeholder="Type your prediction here..."></textarea>
 
-    <div class="row">
-      <button class="btn ghost" id="backToStartFromNoaaBtn">Back</button>
-    </div>
+    <hr class="divider" />
+
+    <h3>⚡ Mission Challenge (Optional)</h3>
+    <p class="small"><strong>Prompt:</strong> Add one more prediction OR one question you want to investigate next.</p>
+    <textarea data-save="noaa_mission_challenge" placeholder="Optional: type here..."></textarea>
   </section>
 
-  <!-- ============ BRANCH: FIELD PATH ============ -->
+  <!-- ============ BRANCH: FIELD PATH (APPEARS BELOW) ============ -->
   <section id="branchField" class="hidden">
     <div class="split">
       <div class="placeholder" aria-label="Image placeholder">
@@ -442,9 +459,11 @@
         <p class="small">Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?</p>
         <textarea data-save="optional_challenge" placeholder="Optional: type your answer here..."></textarea>
 
-        <div class="row">
-          <button class="btn ghost" id="backToStartFromFieldBtn">Back</button>
-        </div>
+        <hr class="divider" />
+
+        <h3>⚡ Mission Challenge (Optional)</h3>
+        <p class="small"><strong>Prompt:</strong> Add one more observation you think matters most, and explain why.</p>
+        <textarea data-save="field_mission_challenge" placeholder="Optional: type here..."></textarea>
       </div>
     </div>
   </section>
