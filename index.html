@@ -5,382 +5,414 @@
   <title>Eco-Responders: After the Fire</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Comfortaa -->
+  <!-- Comfortaa font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#f5f7f6;
-      --card:#ffffff;
-      --ink:#15332b;
-      --muted:#415b54;
-      --accent:#2f5d50;
-      --accent2:#405a53;
-      --border:#d7e2de;
-      --soft:#eef5f2;
+      --forest: #2f5d50;
+      --bg: #f5f7f6;
+      --card: #ffffff;
+      --muted: #4a5b57;
+
+      /* Save/Resume widget color (different from green) */
+      --widget: #4b3f72;          /* purple */
+      --widget2: #ffffff;
+      --widgetBorder: rgba(255,255,255,0.18);
+      --widgetBtn: #ffd166;       /* warm accent */
+      --widgetBtnText: #2b2b2b;
+
+      --soft: #eef5f2;
+      --line: #e6ece9;
     }
-    *{ box-sizing:border-box; }
+
     body{
       margin:0;
-      font-family:"Comfortaa", system-ui, Arial, sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-      line-height:1.6;
+      font-family: "Comfortaa", system-ui, Arial, sans-serif;
+      background: var(--bg);
+      line-height: 1.65;
+      color: #1f2b28;
     }
+
     header{
-      background:var(--accent);
-      color:#fff;
-      padding:1.1rem 1.25rem;
-      position:sticky;
-      top:0;
-      z-index:10;
+      background: var(--forest);
+      color: #fff;
+      padding: 1.25rem 1.25rem 1.5rem;
     }
-    header h1{ margin:0; font-size:1.25rem; }
-    header .sub{ opacity:.95; font-size:.9rem; margin-top:.25rem; }
+    header h1{
+      margin: 0 0 0.25rem;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    header .sub{
+      opacity: 0.95;
+      font-size: 0.95rem;
+    }
 
     main{
-      max-width:980px;
-      margin:0 auto;
-      padding:1.25rem;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 1.25rem;
     }
 
     .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:1rem;
-      box-shadow:0 2px 10px rgba(0,0,0,.03);
-      margin:1rem 0;
-    }
-    .soft{
-      background:var(--soft);
-      border-left:6px solid var(--accent);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+      margin-bottom: 1rem;
     }
 
-    /* Top-right Save/Resume panel */
-    .top-tools{
-      position:fixed;
-      top:84px;
-      right:14px;
-      width:min(320px, 92vw);
-      background:#ffffffea;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:.6rem;
-      box-shadow:0 10px 30px rgba(0,0,0,.10);
-      z-index:20;
-      backdrop-filter: blur(6px);
+    .grid2{
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 1rem;
+      align-items: start;
     }
-    .tools-row{
+    @media (max-width: 860px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .imgHold{
+      border: 2px dashed #c7d3cf;
+      border-radius: 14px;
+      background: #fafcfc;
+      min-height: 220px;
       display:flex;
-      gap:.5rem;
       align-items:center;
+      justify-content:center;
+      padding: 0.75rem;
+      color: var(--muted);
+      text-align:center;
+      font-size: 0.95rem;
     }
-    .tools-row .btn{ flex:0 0 auto; }
-    .tools-label{
-      font-size:.78rem;
-      color:var(--muted);
-      margin:.35rem 0 .25rem;
+
+    .btnRow{
+      display:flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
     }
-    .tools-input{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:.45rem .55rem;
-      font-size:.85rem;
-      font-family:inherit;
-    }
-    .tools-msg{
-      font-size:.78rem;
-      margin:.35rem 0 0;
-      color:var(--muted);
-      min-height:1.1em;
+
+    button{
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      cursor:pointer;
+      font-size: 1rem;
     }
 
     .btn{
-      background:var(--accent);
+      background: var(--forest);
       color:#fff;
-      border:none;
-      border-radius:12px;
-      padding:.55rem .8rem;
-      font-family:inherit;
-      cursor:pointer;
-      font-size:.9rem;
-      font-weight:700;
     }
-    .btn.secondary{ background:var(--accent2); }
-    .btn.ghost{
-      background:transparent;
-      border:1px solid var(--accent);
-      color:var(--accent);
-    }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; }
+    .btn:hover{ opacity: 0.95; }
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:1rem;
-      align-items:start;
-    }
-    @media (max-width: 850px){
-      .grid2{ grid-template-columns:1fr; }
-      .top-tools{ top:92px; right:10px; }
+    .btnGhost{
+      background: transparent;
+      color: var(--forest);
+      border: 1px solid var(--forest);
     }
 
-    .placeholder{
-      border:2px dashed var(--border);
-      border-radius:14px;
-      min-height:180px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--muted);
-      background:#fafcfc;
-      font-size:.9rem;
-      padding:1rem;
-      text-align:center;
+    .btnSecondary{
+      background: #405a53;
+      color:#fff;
+    }
+
+    .small{
+      font-size: 0.92rem;
+      color: var(--muted);
     }
 
     details{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:.75rem .9rem;
-      background:#fff;
-      margin:.8rem 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.75rem 0.85rem;
+      background: #fff;
+      margin-top: 0.75rem;
     }
-    summary{
-      cursor:pointer;
-      font-weight:700;
-      color:var(--accent);
-      list-style:none;
+    details summary{
+      cursor: pointer;
+      font-weight: 700;
+      color: #1f3b34;
     }
-    summary::-webkit-details-marker{ display:none; }
-    .bullets{
-      margin:.6rem 0 0;
-      padding-left:1.1rem;
-    }
-    .pill{
-      display:inline-block;
-      background:#dfece7;
-      color:var(--accent);
-      padding:.1rem .55rem;
-      border-radius:999px;
-      font-size:.75rem;
-      font-weight:700;
+    details > *:not(summary){
+      margin-top: 0.65rem;
     }
 
-    textarea.writebox{
-      width:100%;
-      min-height:120px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:.75rem;
-      font-family:inherit;
-      font-size:1rem;
-      margin:.35rem 0 .1rem;
-    }
-    .prompt{
-      font-weight:700;
-      margin:.6rem 0 .25rem;
-    }
-    .small{
-      font-size:.9rem;
-      color:var(--muted);
+    hr{
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 1rem 0;
     }
 
-    .row{
+    textarea{
+      width: 100%;
+      min-height: 125px;
+      border-radius: 14px;
+      border: 1px solid #cfd8d5;
+      padding: 0.85rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    .callout{
+      background: var(--soft);
+      border-left: 6px solid var(--forest);
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .hidden{ display:none; }
+
+    /* ---------- TOP RIGHT Save/Resume widget (smaller + different color) ---------- */
+    .widget{
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: 240px;               /* smaller */
+      background: var(--widget);  /* different color */
+      color: var(--widget2);
+      border: 1px solid var(--widgetBorder);
+      border-radius: 14px;
+      padding: 0.65rem;
+      z-index: 9999;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .widget h3{
+      margin: 0 0 0.4rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .widget button{
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+    }
+    .widget .saveBtn{
+      background: var(--widgetBtn);
+      color: var(--widgetBtnText);
+      font-weight: 700;
+    }
+    .widget .miniLabel{
+      font-size: 0.82rem;
+      opacity: 0.95;
+      margin: 0.55rem 0 0.35rem;
+    }
+    .widget textarea{
+      min-height: 58px;
+      padding: 0.55rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      border: none;
+      outline: none;
+    }
+    .widget .miniRow{
       display:flex;
-      flex-wrap:wrap;
-      gap:.6rem;
-      margin-top:.8rem;
-      align-items:center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .widget .miniRow button{
+      width: 50%;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      font-weight: 600;
+    }
+    .widget .msg{
+      font-size: 0.82rem;
+      opacity: 0.95;
+      margin-top: 0.5rem;
+      white-space: pre-wrap;
     }
 
-    .hidden{ display:none !important; }
-
-    /* Modal for Save & Exit result */
-    .modal-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.35);
-      display:none;
-      align-items:center;
+    /* QR area (shown after Save & Exit) */
+    .qrWrap{
+      margin-top: 0.6rem;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 0.5rem;
+    }
+    .qrTitle{
+      font-size: 0.82rem;
+      margin: 0 0 0.35rem;
+      opacity: 0.95;
+      font-weight: 700;
+    }
+    #qr{
+      display:flex;
       justify-content:center;
-      z-index:50;
-      padding:1rem;
     }
-    .modal{
-      width:min(860px, 96vw);
-      background:#fff;
-      border-radius:16px;
-      padding:1rem;
-      border:1px solid var(--border);
-      box-shadow:0 18px 60px rgba(0,0,0,.25);
-    }
-    .modal h2{ margin:.2rem 0 .4rem; }
-    .codebox{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:.55rem .7rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size:.95rem;
-      background:#fafcfc;
-      word-break:break-all;
-    }
-    .qrwrap{
-      display:flex;
-      gap:1rem;
-      flex-wrap:wrap;
-      align-items:flex-start;
-      margin-top:.7rem;
-    }
-    #qrcode{
-      padding:.6rem;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:#fff;
+
+    /* Ensure content doesn't hide under widget on tiny screens */
+    @media (max-width: 560px){
+      .widget{ width: 92vw; right: 4vw; }
     }
   </style>
-
-  <!-- Libraries for shorter resume payload + QR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
-  <header>
-    <h1>Eco-Responders: After the Fire</h1>
-    <div class="sub">Interactive story prototype (auto-saves • Save & Exit • Resume Code + QR)</div>
-  </header>
+  <!-- Small top-right widget -->
+  <div class="widget" aria-label="Save and Resume">
+    <h3>Save & Exit</h3>
+    <button class="saveBtn" id="saveExitBtn">Save & Exit</button>
 
-  <!-- Top-right tools (small) -->
-  <div class="top-tools" aria-label="Save and resume tools">
-    <div class="tools-row">
-      <button class="btn secondary" id="saveExitBtnTop">Save & Exit</button>
-      <button class="btn ghost" id="resetBtnTop" title="Clears saved work on this device">Reset</button>
+    <div class="miniLabel">Resume Code (paste here)</div>
+    <textarea id="resumeInput" placeholder="Paste code..."></textarea>
+
+    <div class="miniRow">
+      <button id="resumeBtn" title="Resume from code">Resume</button>
+      <button id="clearResumeInputBtn" title="Clear input">Clear</button>
     </div>
 
-    <div class="tools-label">Resume Code (paste here to continue)</div>
-    <input class="tools-input" id="resumeInputTop" placeholder="Paste Resume Code…" />
-    <div class="tools-row" style="margin-top:.45rem;">
-      <button class="btn" id="resumeBtnTop">Resume</button>
-      <button class="btn ghost" id="clearResumeTop">Clear</button>
+    <div class="msg" id="widgetMsg"></div>
+
+    <div class="qrWrap hidden" id="qrWrap">
+      <div class="qrTitle">QR (opens lesson + restores progress)</div>
+      <div id="qr"></div>
     </div>
-    <div class="tools-msg" id="resumeMsgTop"></div>
   </div>
 
+  <header>
+    <h1>Eco-Responders: After the Fire</h1>
+    <div class="sub">Interactive prototype • saves on device + Resume Code • no logins</div>
+  </header>
+
   <main>
-    <!-- Setting the Story -->
-    <div class="card soft">
-      <span class="pill">Setting the Story</span>
-      <div class="grid2" style="margin-top:.75rem;">
+    <!-- SECTION A: Setting the story -->
+    <div class="card" id="sceneA">
+      <div class="grid2">
         <div>
           <p>The air smells faintly of pine and smoke, reminders that nature is constantly changing.</p>
           <p>As an Eco-Responder, you’ve learned that every fire tells two stories: one of loss and one of renewal.</p>
           <p>This week, your team is on alert. Just over the ridge, a town called Forest Glen was hit by a wildfire two weeks ago.</p>
           <p>Your town, Maple Valley, sits just downwind.</p>
+
+          <details>
+            <summary>What to Expect</summary>
+            <p>As an Eco-Responder, your job is to find out how wildfires start, spread, and change habitats.</p>
+            <p>You’ll look at real evidence, from NOAA weather data to FEMA field reports, to spot patterns and causes.</p>
+            <p><strong>🔍 Your Mission</strong></p>
+            <ul>
+              <li>Add notes in your Field Journal as you move through each part of the story.</li>
+              <li>Use your clues and ideas to make a final plan that helps Maple Valley rebuild safely for both people and wildlife.</li>
+              <li>You’ll also make choices that guide what you see and discover along the way.</li>
+            </ul>
+            <p>You will encounter two kinds of challenges:</p>
+            <p><strong>🔬 Think Like a Scientist</strong><br><span class="small">Found inside your Field Journal. These help you connect your evidence to clear explanations, just like real scientists do.</span></p>
+            <p><strong>Mission Challenges</strong><br><span class="small">Found in the lesson. These are optional deeper dives for students who want to explore more.</span></p>
+          </details>
+
+          <details>
+            <summary>Mission Glossary: Key Terms to Know</summary>
+            <p>⚡ <strong>Fuel-Moisture</strong><br>How much water is stored in plants and soil. When it’s low, leaves and branches dry out and burn more easily.</p>
+            <p>🔥 <strong>Red Flag Warning</strong><br>A weather alert from NOAA when hot, dry, and windy conditions make wildfires more likely to spread.</p>
+            <p>🏠 <strong>Defensible Space</strong><br>A safety zone (about 30 feet around a home) kept clear of flammable materials to slow or stop wildfire spread.</p>
+            <p>🏗 <strong>Fire-Resistant Materials</strong><br>Building materials (like stucco or metal roofs) that don’t easily burn, protecting homes from embers and heat.</p>
+            <p>♻ <strong>Feedback Loop</strong><br>When one change causes another that strengthens or weakens the first, for example, fewer trees → hotter ground → more fires.</p>
+            <p>🌎 <strong>Ecosystem Recovery</strong><br>How plants, animals, and soil rebuild after a disturbance like a wildfire.</p>
+            <p>🏛 <strong>FEMA (Federal Emergency Management Agency)</strong><br>The agency that helps people and communities prepare for and recover from natural disasters.</p>
+            <p>☁ <strong>NOAA (National Oceanic and Atmospheric Administration)</strong><br>The agency that studies Earth’s weather and climate to help predict and prevent environmental hazards.</p>
+          </details>
+
+          <div class="btnRow">
+            <button class="btn" id="beginMissionBtn">Begin Mission</button>
+          </div>
         </div>
-        <div class="placeholder" aria-label="Image placeholder">
-          Image Holder (right of text)<br>
-          <span class="small">Upload later: images/setting-story.png</span>
+
+        <div class="imgHold">
+          Image Holder<br>
+          <span class="small">(Place an image here later)</span>
         </div>
-      </div>
-
-      <details>
-        <summary>What to Expect</summary>
-        <div style="margin-top:.6rem;">
-          <p>As an Eco-Responder, your job is to find out how wildfires start, spread, and change habitats.</p>
-          <p>You’ll look at real evidence, from NOAA weather data to FEMA field reports, to spot patterns and causes.</p>
-
-          <p class="prompt">🔍 Your Mission</p>
-          <ul class="bullets">
-            <li>Add notes in your Field Journal as you move through each part of the story.</li>
-            <li>Use your clues and ideas to make a final plan that helps Maple Valley rebuild safely for both people and wildlife.</li>
-            <li>You’ll also make choices that guide what you see and discover along the way.</li>
-          </ul>
-
-          <p>You will encounter two kinds of challenges:</p>
-
-          <p class="prompt">🔬 Think Like a Scientist</p>
-          <p class="small">Found inside your Field Journal. These help you connect your evidence to clear explanations, just like real scientists do.</p>
-
-          <p class="prompt">Mission Challenges</p>
-          <p class="small">Found in the lesson. These are optional deeper dives for students who want to explore more.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>Mission Glossary: Key Terms to Know</summary>
-        <div style="margin-top:.6rem;">
-          <p><strong>⚡ Fuel-Moisture</strong><br>How much water is stored in plants and soil. When it’s low, leaves and branches dry out and burn more easily.</p>
-          <p><strong>🔥 Red Flag Warning</strong><br>A weather alert from NOAA when hot, dry, and windy conditions make wildfires more likely to spread.</p>
-          <p><strong>🏠 Defensible Space</strong><br>A safety zone (about 30 feet around a home) kept clear of flammable materials to slow or stop wildfire spread.</p>
-          <p><strong>🏗 Fire-Resistant Materials</strong><br>Building materials (like stucco or metal roofs) that don’t easily burn, protecting homes from embers and heat.</p>
-          <p><strong>♻ Feedback Loop</strong><br>When one change causes another that strengthens or weakens the first, for example, fewer trees → hotter ground → more fires.</p>
-          <p><strong>🌎 Ecosystem Recovery</strong><br>How plants, animals, and soil rebuild after a disturbance like a wildfire.</p>
-          <p><strong>🏛 FEMA</strong><br>The agency that helps people and communities prepare for and recover from natural disasters.</p>
-          <p><strong>☁ NOAA</strong><br>The agency that studies Earth’s weather and climate to help predict and prevent environmental hazards.</p>
-        </div>
-      </details>
-
-      <div class="row">
-        <button class="btn" id="beginMissionBtn">Begin Mission</button>
-        <span class="small">This will reveal the next part on the same page.</span>
       </div>
     </div>
 
-    <!-- Mission Starts (hidden until Begin Mission) -->
-    <section id="missionStart" class="card hidden">
+    <!-- SECTION B: Appears after Begin Mission -->
+    <div class="card hidden" id="sceneB">
       <div class="grid2">
-        <div class="placeholder">Image Holder (left)<br><span class="small">Upload later: images/tablet-alert.png</span></div>
+        <div class="imgHold">
+          Image Holder<br>
+          <span class="small">(Mission alert / Jordan on screen)</span>
+        </div>
+
         <div>
-          <p><strong>Ping! Ping! Ping!</strong></p>
+          <h2 style="margin-bottom:0.25rem;">Ping! Ping! Ping!</h2>
           <p>Your Eco-Responder tablet flashes red.</p>
           <p>Jordan, your FEMA mentor, appears on the screen.</p>
           <p>“Forest Glen’s fire is finally contained,” he says, “but NOAA just issued a Red Flag Warning for Maple Valley. Relative humidity is 14%, winds steady at 25 mph, strong enough to push embers a mile. We need evidence from Forest Glen before the next spark.”</p>
-          <p><strong>"Don't forget to bring your field journal!"</strong></p>
+          <p><em>"Don't forget to bring your field journal!"</em></p>
+
+          <hr>
+
+          <p><strong>Where will you begin?</strong></p>
+
+          <div class="btnRow">
+            <button class="btn" data-choice="startpath" data-value="noaa">Analyze NOAA Weather Data First</button>
+            <button class="btn" data-choice="startpath" data-value="field">Go Straight to the Fire Zone for Field Observation</button>
+          </div>
+
+          <div class="callout hidden" id="choiceFeedback"></div>
+
+          <div class="btnRow">
+            <button class="btnSecondary hidden" id="continueBtn">Continue</button>
+          </div>
         </div>
       </div>
+    </div>
 
-      <p class="prompt" style="margin-top:1rem;">Where will you begin?</p>
-      <div class="row">
-        <button class="btn" id="btnNOAA">Analyze NOAA Weather Data First</button>
-        <button class="btn secondary" id="btnFireZone">Go Straight to the Fire Zone for Field Observation</button>
-      </div>
-    </section>
-
-    <!-- Branch A: NOAA -->
-    <section id="branchNOAA" class="card hidden">
+    <!-- SECTION C1: NOAA branch -->
+    <div class="card hidden" id="branchNoaa">
+      <h2>You chose: NOAA Weather Data</h2>
       <p>You arrive at the mobile lab, and your tablet connects to NOAA’s drought archive.</p>
       <p>“See the trend? Less rain and more heat mean lower fuel moisture,” Jordan mutters. “That’s a dangerous mix. The plants themselves become fuel.”</p>
       <p>With your data uploaded, you now need to understand the field conditions.</p>
 
-      <div class="placeholder" style="margin-top:.8rem;">Image Holder (below text)<br><span class="small">Upload later: images/noaa-lab.png</span></div>
+      <div class="imgHold" style="min-height:180px; margin-top:0.75rem;">
+        Image Holder (below text)
+      </div>
 
-      <p class="prompt">Field Journal: Record one pattern that increased fire risk and explain its effect on plants and animals.</p>
-      <textarea class="writebox" data-save="fj_noaa_pattern" placeholder="Type here..."></textarea>
+      <hr>
 
-      <p class="prompt">⚡ Mission Challenge (Optional)</p>
+      <h3>Field Journal</h3>
+      <p class="small">Record one pattern that increased fire risk and explain its effect on plants and animals.</p>
+      <div class="callout">
+        💡 <strong>Scientist Tip:</strong> You might want to mention how this pattern affects living things, not just the environment.
+      </div>
+      <textarea data-save="noaa_journal" placeholder="Type here..."></textarea>
+
+      <h3 style="margin-top:1rem;">⚡ Mission Challenge (Optional)</h3>
       <p class="small">Predict what might happen to the forest next year if rainfall continues to drop and temperatures stay high. Use data to support your prediction.</p>
-      <textarea class="writebox" data-save="mc_noaa_predict" placeholder="Type here (optional)..."></textarea>
-    </section>
+      <textarea data-save="noaa_challenge" placeholder="Type here (optional)..."></textarea>
+    </div>
 
-    <!-- Branch B: Fire Zone -->
-    <section id="branchFireZone" class="card hidden">
+    <!-- SECTION C2: Field branch -->
+    <div class="card hidden" id="branchField">
       <div class="grid2">
-        <div class="placeholder">Image Holder (left)<br><span class="small">Upload later: images/fire-zone.png</span></div>
+        <div class="imgHold">
+          Image Holder<br>
+          <span class="small">(Ranger photos)</span>
+        </div>
+
         <div>
-          <p>You ride beside Ranger Marisol into Forest Glen.</p>
-          <p>The air smells like ash and rain. Your tablet displays photos from Ranger Marisol.</p>
-          <p>In the photos, you notice:</p>
-          <ul class="bullets">
+          <h2>You chose: Field Observation</h2>
+          <p>You ride beside Ranger Marisol into Forest Glen. The air smells like ash and rain. Your tablet displays photos from Ranger Marisol.</p>
+
+          <p><strong>In the photos, you notice:</strong></p>
+          <ul>
             <li>Soil dry and crumbly, the organic layer burned away.</li>
             <li>Green sprouts poking through black earth.</li>
             <li>Metal-roofed homes still standing; wood roofs gone.</li>
           </ul>
+
           <p>“Soil’s dry,” she says. “Thin ash layer, but look, some pine cones cracked open.”</p>
           <p>You examine one: resin melted, seeds spilled onto the ground.</p>
           <p>“Serotinous cones,” she explains. “Some trees need heat to start over.”</p>
@@ -388,60 +420,29 @@
         </div>
       </div>
 
-      <p class="prompt">Field Journal: Record two observations showing how the fire affected people or wildlife.</p>
-      <textarea class="writebox" data-save="fj_fire_observations" placeholder="Type here..."></textarea>
+      <hr>
 
-      <p class="prompt">🌱 Mission Challenge (Optional)</p>
+      <h3>Field Journal</h3>
+      <p class="small">Record two observations showing how the fire affected people or wildlife.</p>
+      <div class="callout">
+        💡 <strong>Scientist Tip:</strong> You might want to mention how this pattern affects living things, not just the environment.
+      </div>
+      <textarea data-save="field_journal" placeholder="Type here..."></textarea>
+
+      <h3 style="margin-top:1rem;">🌱 Mission Challenge (Optional)</h3>
       <p class="small">Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?</p>
-      <textarea class="writebox" data-save="mc_fire_plant" placeholder="Type here (optional)..."></textarea>
-    </section>
+      <textarea data-save="field_challenge" placeholder="Type here (optional)..."></textarea>
+    </div>
 
-    <!-- Optional: quick export (still useful for Canvas) -->
     <div class="card">
-      <div class="row">
-        <button class="btn ghost" id="exportBtn">Export Notes (Copy)</button>
-        <span class="small">Copies a student-friendly summary for Canvas (still available).</span>
-      </div>
-      <p class="small" id="exportMsg" style="margin:.5rem 0 0;"></p>
-    </div>
-
-  </main>
-
-  <!-- Save & Exit modal -->
-  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Resume options">
-    <div class="modal">
-      <h2>Saved! Here’s how to come back later.</h2>
-      <p class="small" style="margin-top:0;">
-        <strong>Best option:</strong> Use the QR code (no typing). You can also copy the Resume Code.
+      <p class="small">
+        Prototype note: Writing auto-saves on this device. “Save & Exit” generates a Resume Code + QR to restore progress on another device.
       </p>
-
-      <div class="qrwrap">
-        <div style="flex:1 1 420px;">
-          <div class="small"><strong>Resume Code</strong> (copied automatically)</div>
-          <div class="codebox" id="resumeCodeBox"></div>
-
-          <div class="row">
-            <button class="btn" id="copyCodeBtn">Copy Code</button>
-            <button class="btn ghost" id="closeModalBtn">Close</button>
-          </div>
-
-          <p class="small" id="modalMsg" style="margin:.4rem 0 0;"></p>
-          <p class="small" style="margin:.4rem 0 0;">
-            If you’re on a different device later, open the same website and paste the Resume Code in the top-right box.
-          </p>
-        </div>
-
-        <div style="flex:0 0 260px;">
-          <div class="small"><strong>QR Resume Link</strong></div>
-          <div id="qrcode"></div>
-          <p class="small" style="margin:.4rem 0 0;">
-            Scan to reopen <strong>this lesson</strong> with your saved progress.
-          </p>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <script src="app.js"></script>
+    <!-- QR code library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="app.js"></script>
+  </main>
 </body>
 </html>
