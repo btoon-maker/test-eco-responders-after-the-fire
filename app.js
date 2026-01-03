@@ -1,13 +1,11 @@
 // ===========================
-// State keys for this page
+// State keys
 // ===========================
 const SAVE_KEYS = [
-  // visibility / progress
-  "v_missionStart",
-  "v_choiceFeedback",
-  "v_branchNoaa",
-  "v_branchField",
-  "start_choice",
+  "unlock_mission",
+  "start_choice",               // "noaa" or "field"
+  "unlock_noaa",
+  "unlock_field",
 
   // writing
   "noaa_prediction",
@@ -33,34 +31,29 @@ function setModalStatus(msg) {
   if (el) el.textContent = msg;
 }
 
-function reveal(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove("hidden");
-  el.scrollIntoView({ behavior: "smooth", block: "start" });
+function unlockBlock(blockId, msgId) {
+  const block = document.getElementById(blockId);
+  const msg = document.getElementById(msgId);
+  if (block) block.classList.remove("locked");
+  if (msg) msg.style.display = "none";
 }
 
-function setVisibleFlag(flagKey, yes) {
-  setLS(flagKey, yes ? "yes" : "");
-}
-
-function restoreVisibilityFromStorage() {
-  if (getLS("v_missionStart") === "yes") document.getElementById("missionStart")?.classList.remove("hidden");
-  if (getLS("v_branchNoaa") === "yes") document.getElementById("branchNoaa")?.classList.remove("hidden");
-  if (getLS("v_branchField") === "yes") document.getElementById("branchField")?.classList.remove("hidden");
-
-  // Restore choice feedback
-  const choice = getLS("start_choice");
-  if (choice) {
-    renderChoiceFeedback(choice);
-    document.getElementById("choiceFeedback")?.classList.remove("hidden");
-    const contBtn = document.getElementById("continueAfterChoiceBtn");
-    if (contBtn) contBtn.disabled = false;
+function lockBlock(blockId, msgId, msgText) {
+  const block = document.getElementById(blockId);
+  const msg = document.getElementById(msgId);
+  if (block) block.classList.add("locked");
+  if (msg) {
+    msg.style.display = "block";
+    if (msgText) msg.textContent = msgText;
   }
 }
 
+function scrollToId(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 // ===========================
-// Autosave for journal boxes
+// Autosave
 // ===========================
 function wireAutosave() {
   document.querySelectorAll("textarea[data-save]").forEach((ta) => {
@@ -71,7 +64,7 @@ function wireAutosave() {
 }
 
 // ===========================
-// Resume Code (compressed)
+// Resume Code encode/decode
 // ===========================
 function collectState() {
   const state = {};
@@ -89,9 +82,8 @@ function applyState(state) {
     ta.value = getLS(ta.dataset.save);
   });
 
-  // restore what should be visible
-  restoreVisibilityFromStorage();
-
+  // restore UI unlocks
+  restoreUnlocks();
   setTopStatus("Resumed!");
 }
 
@@ -111,7 +103,7 @@ function decodeResumeCode(code) {
 }
 
 // ===========================
-// QR Code: lesson + resume
+// QR
 // ===========================
 function buildResumeUrl(code) {
   const url = new URL(window.location.href);
@@ -131,7 +123,7 @@ function renderQrInto(el, text) {
 }
 
 // ===========================
-// Clipboard helper
+// Clipboard
 // ===========================
 async function copyToClipboard(text) {
   try {
@@ -143,13 +135,13 @@ async function copyToClipboard(text) {
 }
 
 // ===========================
-// Choice feedback (unchanged)
+// Choice feedback
 // ===========================
 function renderChoiceFeedback(which) {
   const box = document.getElementById("choiceFeedback");
   if (!box) return;
+  box.style.display = "block";
 
-  box.classList.remove("hidden");
   if (which === "noaa") {
     box.innerHTML = `
       <h3 style="margin-top:0;">You chose to start with regional data.</h3>
@@ -170,7 +162,39 @@ function renderChoiceFeedback(which) {
 }
 
 // ===========================
-// Modal open/close
+// Unlock restore
+// ===========================
+function restoreUnlocks() {
+  // mission
+  if (getLS("unlock_mission") === "yes") {
+    unlockBlock("missionStart", "lockMsgMission");
+  } else {
+    lockBlock("missionStart", "lockMsgMission", "Locked: Click “Begin Mission” above to continue.");
+  }
+
+  // branches
+  const choice = getLS("start_choice");
+  if (choice) {
+    renderChoiceFeedback(choice);
+    const cont = document.getElementById("continueAfterChoiceBtn");
+    if (cont) cont.disabled = false;
+  }
+
+  if (getLS("unlock_noaa") === "yes") {
+    unlockBlock("branchNoaa", "lockMsgNoaa");
+  } else {
+    lockBlock("branchNoaa", "lockMsgNoaa", "Locked: Make a choice above, then click “Continue.”");
+  }
+
+  if (getLS("unlock_field") === "yes") {
+    unlockBlock("branchField", "lockMsgField");
+  } else {
+    lockBlock("branchField", "lockMsgField", "Locked: Make a choice above, then click “Continue.”");
+  }
+}
+
+// ===========================
+// Modal
 // ===========================
 function openModalWithCurrentState() {
   const overlay = document.getElementById("overlay");
@@ -185,7 +209,6 @@ function openModalWithCurrentState() {
 
   setModalStatus("Resume Code created. Copy it or scan the QR.");
 
-  // Attempt auto-copy
   copyToClipboard(code).then(ok => {
     if (ok) {
       setTopStatus("Paused. Resume Code copied.");
@@ -196,22 +219,17 @@ function openModalWithCurrentState() {
     }
   });
 
-  if (overlay) {
-    overlay.classList.add("show");
-    overlay.setAttribute("aria-hidden", "false");
-  }
+  overlay?.classList.add("show");
+  overlay?.setAttribute("aria-hidden", "false");
 }
-
 function closeModal() {
   const overlay = document.getElementById("overlay");
-  if (overlay) {
-    overlay.classList.remove("show");
-    overlay.setAttribute("aria-hidden", "true");
-  }
+  overlay?.classList.remove("show");
+  overlay?.setAttribute("aria-hidden", "true");
 }
 
 // ===========================
-// Resume from TOP box (always present)
+// Resume from top box
 // ===========================
 function resumeFromTopBox() {
   const input = document.getElementById("resumeInputTop");
@@ -222,124 +240,6 @@ function resumeFromTopBox() {
     setTopStatus("Resumed!");
   } catch (e) {
     setTopStatus(`Resume failed: ${e.message}`);
-  }
-}
-
-// ===========================
-// Wire up buttons
-// ===========================
-function wireButtons() {
-  // Begin Mission (continuous reveal)
-  document.getElementById("beginMissionBtn")?.addEventListener("click", () => {
-    setVisibleFlag("v_missionStart", true);
-    reveal("missionStart");
-    setTopStatus("Mission started.");
-  });
-
-  // Choices
-  const contBtn = document.getElementById("continueAfterChoiceBtn");
-
-  document.getElementById("choiceNoaaBtn")?.addEventListener("click", () => {
-    setLS("start_choice", "noaa");
-    setVisibleFlag("v_choiceFeedback", true);
-    renderChoiceFeedback("noaa");
-    if (contBtn) contBtn.disabled = false;
-    setTopStatus("Choice saved.");
-  });
-
-  document.getElementById("choiceFieldBtn")?.addEventListener("click", () => {
-    setLS("start_choice", "field");
-    setVisibleFlag("v_choiceFeedback", true);
-    renderChoiceFeedback("field");
-    if (contBtn) contBtn.disabled = false;
-    setTopStatus("Choice saved.");
-  });
-
-  // Continue reveals the chosen branch BELOW (does not hide anything above)
-  contBtn?.addEventListener("click", () => {
-    const choice = getLS("start_choice");
-    if (choice === "noaa") {
-      setVisibleFlag("v_branchNoaa", true);
-      setVisibleFlag("v_branchField", false); // keep only one branch visible at a time
-      document.getElementById("branchField")?.classList.add("hidden");
-      reveal("branchNoaa");
-    } else if (choice === "field") {
-      setVisibleFlag("v_branchField", true);
-      setVisibleFlag("v_branchNoaa", false);
-      document.getElementById("branchNoaa")?.classList.add("hidden");
-      reveal("branchField");
-    }
-    setTopStatus("Continued.");
-  });
-
-  // Pause modal
-  document.getElementById("pauseResumeBtn")?.addEventListener("click", () => {
-    openModalWithCurrentState();
-  });
-
-  // Close modal
-  document.getElementById("closeModalBtn")?.addEventListener("click", closeModal);
-
-  // Click outside modal closes it (overlay click)
-  document.getElementById("overlay")?.addEventListener("click", (e) => {
-    if (e.target && e.target.id === "overlay") closeModal();
-  });
-
-  // Copy code
-  document.getElementById("copyCodeBtn")?.addEventListener("click", async () => {
-    const code = document.getElementById("resumeCodeBox")?.textContent || "";
-    const ok = await copyToClipboard(code);
-    setModalStatus(ok ? "✅ Copied!" : "⚠️ Copy blocked—select the code and copy.");
-  });
-
-  // Reset (testing)
-  document.getElementById("resetBtn")?.addEventListener("click", () => {
-    const ok = confirm("Reset clears saved work on this device. Continue?");
-    if (!ok) return;
-    SAVE_KEYS.forEach(delLS);
-
-    const url = new URL(window.location.href);
-    url.searchParams.delete("resume");
-    window.history.replaceState({}, "", url.toString());
-
-    setTopStatus("Reset complete.");
-    setModalStatus("Reset complete.");
-    location.reload();
-  });
-
-  // Top resume box
-  document.getElementById("resumeTopBtn")?.addEventListener("click", resumeFromTopBox);
-  document.getElementById("clearTopBtn")?.addEventListener("click", () => {
-    const input = document.getElementById("resumeInputTop");
-    if (input) input.value = "";
-    setTopStatus("Cleared.");
-  });
-
-  // Export PDF
-  document.getElementById("exportPdfBtn")?.addEventListener("click", () => {
-    exportJournalToPDF();
-  });
-}
-
-// ===========================
-// Auto-resume from URL (?resume=...)
-// ===========================
-function maybeResumeFromUrl() {
-  const url = new URL(window.location.href);
-  const code = url.searchParams.get("resume");
-  if (!code) return false;
-
-  try {
-    const state = decodeResumeCode(code);
-    applyState(state);
-    setTopStatus("Resumed from QR!");
-    // Optional: clear param after resume
-    url.searchParams.delete("resume");
-    window.history.replaceState({}, "", url.toString());
-    return true;
-  } catch (e) {
-    setTopStatus(`QR resume failed: ${e.message}`);
-    return false;
   }
 }
 
@@ -373,13 +273,9 @@ function exportJournalToPDF() {
         y += fontSize + 6;
       }
     }
-
     function addSpacer(px = 10) {
       y += px;
-      if (y > pageHeight - margin) {
-        doc.addPage();
-        y = margin;
-      }
+      if (y > pageHeight - margin) { doc.addPage(); y = margin; }
     }
 
     const choice = getLS("start_choice") || "(not chosen)";
@@ -423,10 +319,118 @@ function exportJournalToPDF() {
     addLine(fieldMission, 11, false);
 
     doc.save("Eco-Responders_Journal.pdf");
-
     if (exportMsg) exportMsg.textContent = "✅ PDF downloaded (check your downloads folder).";
   } catch (e) {
     if (exportMsg) exportMsg.textContent = "⚠️ PDF export failed. Try Chrome/Edge, or check if downloads are blocked.";
+  }
+}
+
+// ===========================
+// Wiring
+// ===========================
+function wireButtons() {
+  // Begin Mission unlocks mission section (does NOT navigate)
+  document.getElementById("beginMissionBtn")?.addEventListener("click", () => {
+    setLS("unlock_mission", "yes");
+    restoreUnlocks();
+    scrollToId("missionStartWrap");
+    setTopStatus("Mission unlocked.");
+  });
+
+  // Choice buttons
+  const contBtn = document.getElementById("continueAfterChoiceBtn");
+
+  document.getElementById("choiceNoaaBtn")?.addEventListener("click", () => {
+    setLS("start_choice", "noaa");
+    renderChoiceFeedback("noaa");
+    if (contBtn) contBtn.disabled = false;
+    setTopStatus("Choice saved.");
+  });
+
+  document.getElementById("choiceFieldBtn")?.addEventListener("click", () => {
+    setLS("start_choice", "field");
+    renderChoiceFeedback("field");
+    if (contBtn) contBtn.disabled = false;
+    setTopStatus("Choice saved.");
+  });
+
+  // Continue unlocks ONLY the chosen branch (still no navigation)
+  contBtn?.addEventListener("click", () => {
+    const choice = getLS("start_choice");
+    if (choice === "noaa") {
+      setLS("unlock_noaa", "yes");
+      setLS("unlock_field", ""); // keep other locked
+      restoreUnlocks();
+      scrollToId("noaaWrap");
+      setTopStatus("NOAA path unlocked.");
+    } else if (choice === "field") {
+      setLS("unlock_field", "yes");
+      setLS("unlock_noaa", "");
+      restoreUnlocks();
+      scrollToId("fieldWrap");
+      setTopStatus("Field path unlocked.");
+    } else {
+      setTopStatus("Pick a choice first.");
+    }
+  });
+
+  // Pause modal
+  document.getElementById("pauseResumeBtn")?.addEventListener("click", openModalWithCurrentState);
+  document.getElementById("closeModalBtn")?.addEventListener("click", closeModal);
+  document.getElementById("overlay")?.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "overlay") closeModal();
+  });
+
+  // Copy
+  document.getElementById("copyCodeBtn")?.addEventListener("click", async () => {
+    const code = document.getElementById("resumeCodeBox")?.textContent || "";
+    const ok = await copyToClipboard(code);
+    setModalStatus(ok ? "✅ Copied!" : "⚠️ Copy blocked—select the code and copy.");
+  });
+
+  // Reset
+  document.getElementById("resetBtn")?.addEventListener("click", () => {
+    const ok = confirm("Reset clears saved work on this device. Continue?");
+    if (!ok) return;
+    SAVE_KEYS.forEach(delLS);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("resume");
+    window.history.replaceState({}, "", url.toString());
+
+    location.reload();
+  });
+
+  // Top resume box
+  document.getElementById("resumeTopBtn")?.addEventListener("click", resumeFromTopBox);
+  document.getElementById("clearTopBtn")?.addEventListener("click", () => {
+    const input = document.getElementById("resumeInputTop");
+    if (input) input.value = "";
+    setTopStatus("Cleared.");
+  });
+
+  // Export PDF
+  document.getElementById("exportPdfBtn")?.addEventListener("click", exportJournalToPDF);
+}
+
+// ===========================
+// Auto-resume from URL (?resume=...)
+// ===========================
+function maybeResumeFromUrl() {
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("resume");
+  if (!code) return false;
+
+  try {
+    const state = decodeResumeCode(code);
+    applyState(state);
+    setTopStatus("Resumed from QR!");
+    url.searchParams.delete("resume");
+    window.history.replaceState({}, "", url.toString());
+    return true;
+  } catch (e) {
+    setTopStatus(`QR resume failed: ${e.message}`);
+    return false;
   }
 }
 
@@ -437,7 +441,7 @@ wireAutosave();
 wireButtons();
 
 const didResume = maybeResumeFromUrl();
-if (!didResume) restoreVisibilityFromStorage();
+if (!didResume) restoreUnlocks();
 
 setTopStatus("Ready.");
 setModalStatus("");
