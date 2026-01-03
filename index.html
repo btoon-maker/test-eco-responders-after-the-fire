@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <title>Eco-Responders: After the Fire (Prototype)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 0; background: #f5f7f6; line-height: 1.6; }
     header { background:#2f5d50; color:#fff; padding: 1.25rem; }
-    main { max-width: 980px; margin: 0 auto; background: #fff; padding: 1.5rem; }
+    main { max-width: 980px; margin: 0 auto; background: #fff; padding: 1.5rem; padding-bottom: 7rem; }
 
     h1,h2,h3 { margin-top: 0; color:#1f3b34; }
     .small { font-size: 0.92rem; color:#455; }
@@ -71,12 +70,12 @@
     }
     details summary { cursor:pointer; font-weight: 700; color:#1f3b34; }
 
-    /* ---------- SMALL TOP-RIGHT PANEL ---------- */
+    /* ---------- SMALL TOP-RIGHT PANEL (button only) ---------- */
     .savePanel {
       position: fixed;
       top: 12px;
       right: 12px;
-      width: 260px;
+      width: 220px;
       max-width: calc(100vw - 24px);
       background: #2c3e50;
       color: #fff;
@@ -86,122 +85,162 @@
       z-index: 9999;
       font-size: 0.85rem;
     }
-    .savePanel h4 { margin: 0 0 6px 0; font-size: 0.95rem; }
-    .savePanel label { display:block; margin-top: 8px; opacity: 0.9; }
-    .savePanel input {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.22);
-      padding: 8px 10px;
-      font-size: 0.9rem;
-      box-sizing: border-box;
-      margin-top: 4px;
-      background: rgba(255,255,255,0.10);
-      color: #fff;
-    }
-    .savePanel input::placeholder { color: rgba(255,255,255,0.65); }
-
-    .savePanel .miniRow { display:flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .savePanel h4 { margin: 0 0 8px 0; font-size: 0.95rem; }
     .savePanel .miniBtn {
+      width: 100%;
       border: none;
       border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 0.88rem;
+      padding: 10px 10px;
+      font-size: 0.95rem;
       cursor: pointer;
       background: #16a085;
       color: #fff;
-      flex: 1 1 auto;
+      font-weight: 700;
     }
-    .savePanel .miniBtn.secondary { background: rgba(255,255,255,0.18); }
-    .savePanel .miniBtn.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.45); }
-    .savePanel .status { margin-top: 6px; opacity: 0.9; white-space: pre-wrap; }
+    .savePanel .status { margin-top: 8px; opacity: 0.9; font-size: 0.8rem; white-space: pre-wrap; }
 
-    /* ---------- CENTER MODAL (POP-OUT) ---------- */
+    /* ---------- Center Modal ---------- */
     .overlay {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.45);
+      z-index: 10000;
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 10000;
-      padding: 16px;
+      padding: 14px;
     }
     .overlay.show { display: flex; }
 
     .modal {
-      width: min(720px, 96vw);
+      width: min(760px, 96vw);
       background: #fff;
       border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 18px 60px rgba(0,0,0,0.25);
+      padding: 14px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.25);
       border: 1px solid #e6ece9;
     }
-    .modal h2 { margin: 0 0 6px; color:#1f3b34; }
-    .modal .modalSmall { color:#556; font-size: 0.92rem; margin: 0 0 10px; }
+    .modal h2 { margin: 0 0 6px 0; color:#1f3b34; }
+    .modal .hint { margin: 0 0 12px 0; color:#455; font-size: 0.95rem; }
 
-    .modalGrid {
+    .modal .grid {
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
-      gap: 14px;
+      gap: 12px;
       align-items: start;
     }
-    @media (max-width: 760px){ .modalGrid { grid-template-columns: 1fr; } }
+    @media (max-width: 820px){
+      .modal .grid { grid-template-columns: 1fr; }
+    }
 
     .codeBox {
-      background: #f6f8f7;
-      border: 1px solid #d9e3df;
+      width: 100%;
       border-radius: 12px;
-      padding: 10px;
-      font-family: ui-monospace, Menlo, Consolas, monospace;
+      border: 1px solid #cfd8d5;
+      padding: 10px 12px;
       font-size: 0.95rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      background: #fafcfc;
+      box-sizing: border-box;
       word-break: break-all;
-      min-height: 44px;
     }
 
-    .modalBtns { display:flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .modalBtns .btn { padding: 0.55rem 0.9rem; }
+    .modal .btnRow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .modal .btnPrimary {
+      background:#2f5d50;
+      color:#fff;
+      border:none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 700;
+    }
+    .modal .btnSecondary {
+      background: transparent;
+      color:#2f5d50;
+      border: 1px solid #2f5d50;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 700;
+    }
+    .modal .btnDanger {
+      background: #b42318;
+      color:#fff;
+      border:none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 700;
+    }
 
-    .qrBox {
-      border: 1px solid #d9e3df;
+    .modal .fieldLabel { display:block; margin-top: 10px; font-weight: 700; color:#1f3b34; }
+    .modal input {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #cfd8d5;
+      padding: 10px 12px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      margin-top: 6px;
+    }
+
+    .qrWrapModal {
+      border: 1px solid #e6ece9;
       border-radius: 14px;
       padding: 10px;
-      background: #fff;
-      display:flex;
-      justify-content:center;
+      background: #fafcfc;
     }
-    .modalMsg { font-size: 0.92rem; color:#556; margin-top: 8px; white-space: pre-wrap; }
+    #qrCodeModal { display:flex; justify-content:center; }
+    .qrHintModal { margin-top: 8px; text-align:center; font-size: 0.9rem; color:#455; }
 
-    /* ---------- BOTTOM EXPORT BUTTON ---------- */
-    .exportBar {
+    .modalStatus { margin-top: 10px; font-size: 0.92rem; color:#455; white-space: pre-wrap; }
+
+    /* ---------- Bottom sticky Export button ---------- */
+    .bottomBar {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
-      padding: 10px;
-      background: rgba(245,247,246,0.92);
-      border-top: 1px solid #e6ece9;
-      display:flex;
-      justify-content:center;
       z-index: 9000;
+      background: rgba(255,255,255,0.94);
       backdrop-filter: blur(6px);
+      border-top: 1px solid #e6ece9;
+      padding: 10px 12px;
     }
-    .exportBar .exportBtn {
+    .bottomBar .inner {
+      max-width: 980px;
+      margin: 0 auto;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .exportBtn {
       background:#2f5d50;
       color:#fff;
       border:none;
-      border-radius: 14px;
-      padding: 12px 18px;
+      padding: 10px 14px;
+      border-radius: 12px;
       cursor:pointer;
+      font-weight: 800;
       font-size: 1rem;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    }
+    .exportMsg {
+      font-size: 0.9rem;
+      color:#455;
+      margin: 0;
     }
 
-    /* keep content from hiding behind export bar */
-    main { padding-bottom: 90px; }
-
+    /* keep content from hiding behind fixed top panel on small screens */
     @media (max-width: 520px) {
-      main { padding-top: 8.5rem; }
+      main { padding-top: 6.75rem; }
     }
   </style>
 </head>
@@ -209,61 +248,54 @@
 <body>
 <header>
   <h1>Eco-Responders: After the Fire</h1>
-  <div class="small">Prototype • auto-save + Resume Code + QR • Export My Journal (PDF)</div>
+  <div class="small">Prototype • saves progress • Resume Code + QR</div>
 </header>
 
 <!-- TOP-RIGHT PANEL -->
 <section class="savePanel" aria-label="Pause and Resume Panel">
-  <h4>Pause & Resume</h4>
-
-  <div class="miniRow">
-    <button class="miniBtn" id="pauseBtn">Pause & Resume Later</button>
-  </div>
-
-  <label for="resumeInput">Resume Code</label>
-  <input id="resumeInput" type="text" placeholder="Paste code to resume" />
-
-  <div class="miniRow">
-    <button class="miniBtn secondary" id="resumeBtn">Resume</button>
-    <button class="miniBtn ghost" id="clearResumeInputBtn">Clear</button>
-  </div>
-
+  <h4>Pause</h4>
+  <button class="miniBtn" id="pauseResumeBtn">Pause & Resume Later</button>
   <div class="status" id="saveStatus">Ready.</div>
 </section>
 
 <!-- CENTER MODAL -->
-<div class="overlay" id="pauseOverlay" aria-modal="true" role="dialog">
-  <div class="modal">
-    <h2>Paused! Come back later.</h2>
-    <p class="modalSmall">
-      Use the <strong>Resume Code</strong> (copy) or the <strong>QR</strong> (scan) to continue on another device.
-    </p>
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Pause and Resume Later">
+    <h2>Pause & Resume Later</h2>
+    <p class="hint">Use the QR (best) or copy the Resume Code. You can return on another device.</p>
 
-    <div class="modalGrid">
+    <div class="grid">
       <div>
-        <div class="small"><strong>Resume Code</strong> (copied automatically)</div>
+        <div class="fieldLabel">Resume Code</div>
         <div class="codeBox" id="resumeCodeBox"></div>
 
-        <div class="modalBtns">
-          <button class="btn" id="copyCodeBtn">Copy Code</button>
-          <button class="btn ghost" id="closePauseBtn">Close</button>
+        <div class="btnRow">
+          <button class="btnPrimary" id="copyCodeBtn">Copy Code</button>
+          <button class="btnSecondary" id="closeModalBtn">Close</button>
+          <button class="btnDanger" id="resetBtn" title="Reset for testing">Reset</button>
         </div>
 
-        <div class="modalMsg" id="modalMsg"></div>
+        <label class="fieldLabel" for="resumeInput">Paste a Resume Code to continue</label>
+        <input id="resumeInput" type="text" placeholder="Paste code here..." />
+
+        <div class="btnRow">
+          <button class="btnPrimary" id="resumeBtn">Resume</button>
+          <button class="btnSecondary" id="clearResumeInputBtn">Clear</button>
+        </div>
+
+        <div class="modalStatus" id="modalStatus"></div>
       </div>
 
-      <div>
-        <div class="small"><strong>QR Resume Link</strong></div>
-        <div class="qrBox"><div id="qrCode"></div></div>
-        <div class="small" style="margin-top:8px;">
-          Scan to reopen <strong>this lesson</strong> and restore your progress.
-        </div>
+      <div class="qrWrapModal">
+        <div id="qrCodeModal"></div>
+        <div class="qrHintModal">Scan to open the lesson and restore progress.</div>
       </div>
     </div>
   </div>
 </div>
 
 <main>
+  <!-- Gentle reassurance -->
   <div class="card">
     <span class="pill">You can revise</span>
     <p class="small" style="margin:0.5rem 0 0;">
@@ -271,7 +303,7 @@
     </p>
   </div>
 
-  <!-- HOME -->
+  <!-- ============ HOME / SETTING THE STORY (BEFORE BEGIN MISSION) ============ -->
   <section id="home">
     <h2>Setting the Story</h2>
 
@@ -293,6 +325,10 @@
             <li>Use your clues and ideas to make a final plan that helps Maple Valley rebuild safely for both people and wildlife.</li>
             <li>You’ll also make choices that guide what you see and discover along the way.</li>
           </ul>
+
+          <p>You will encounter two kinds of challenges:</p>
+          <p><strong>🔬 Think Like a Scientist</strong> (found inside your Field Journal)</p>
+          <p><strong>🌱 Mission Challenges</strong> (optional deeper dives inside the mission)</p>
         </details>
 
         <details>
@@ -303,6 +339,8 @@
           <p><strong>🏗 Fire-Resistant Materials</strong><br/>Building materials (like stucco or metal roofs) that don’t easily burn, protecting homes from embers and heat.</p>
           <p><strong>♻ Feedback Loop</strong><br/>When one change causes another that strengthens the first (example: fewer trees → hotter ground → more fires).</p>
           <p><strong>🌎 Ecosystem Recovery</strong><br/>How plants, animals, and soil rebuild after a disturbance like a wildfire.</p>
+          <p><strong>🏛 FEMA</strong><br/>The agency that helps people and communities prepare for and recover from natural disasters.</p>
+          <p><strong>☁ NOAA</strong><br/>The agency that studies Earth’s weather and climate to help predict and prevent environmental hazards.</p>
         </details>
 
         <div class="row">
@@ -310,16 +348,18 @@
         </div>
       </div>
 
-      <div class="placeholder">
+      <div class="placeholder" aria-label="Image placeholder">
         Image Placeholder<br/><span class="small">(right side of text)</span>
       </div>
     </div>
   </section>
 
-  <!-- MISSION START -->
+  <!-- ============ MISSION START (AFTER BEGIN MISSION) ============ -->
   <section id="missionStart" class="hidden">
     <div class="split">
-      <div class="placeholder">Image Placeholder<br/><span class="small">(left side)</span></div>
+      <div class="placeholder" aria-label="Image placeholder">
+        Image Placeholder<br/><span class="small">(left side)</span>
+      </div>
 
       <div>
         <h2>Ping! Ping! Ping!</h2>
@@ -346,18 +386,22 @@
     </div>
   </section>
 
-  <!-- NOAA BRANCH -->
+  <!-- ============ BRANCH: NOAA PATH ============ -->
   <section id="branchNoaa" class="hidden">
     <h2>NOAA Data Path</h2>
     <p>
       You arrive at the mobile lab, and your tablet connects to NOAA’s drought archive.
-      “See the trend? Less rain and more heat mean lower fuel moisture,” Jordan explains.
+      “See the trend? Less rain and more heat mean lower fuel moisture,” Jordan explains. “That’s a dangerous mix.
+      The plants themselves become fuel.”
     </p>
+    <p>With your data uploaded, you now need to understand the field conditions.</p>
+
+    <div class="placeholder" aria-label="Image placeholder" style="min-height:180px; margin: 0.75rem 0;">
+      Image Placeholder (below text)
+    </div>
 
     <h3>Field Journal</h3>
-    <p class="small prompt" data-prompt-for="noaa_prediction">
-      Predict what might happen to the forest next year if rainfall stays low and temperatures stay high. Use data to support your prediction.
-    </p>
+    <p class="small"><strong>Prompt:</strong> Predict what might happen to the forest next year if rainfall stays low and temperatures stay high. Use data to support your prediction.</p>
     <textarea data-save="noaa_prediction" placeholder="Type your prediction here..."></textarea>
 
     <div class="row">
@@ -365,26 +409,37 @@
     </div>
   </section>
 
-  <!-- FIELD BRANCH -->
+  <!-- ============ BRANCH: FIELD PATH ============ -->
   <section id="branchField" class="hidden">
     <div class="split">
-      <div class="placeholder">Image Placeholder (left)</div>
+      <div class="placeholder" aria-label="Image placeholder">
+        Image Placeholder (left)
+      </div>
       <div>
         <h2>Field Observation Path</h2>
-        <p>You ride beside Ranger Marisol into Forest Glen. Your tablet displays photos from Ranger Marisol.</p>
+        <p>
+          You ride beside Ranger Marisol into Forest Glen. Your tablet displays photos from Ranger Marisol.
+        </p>
+        <p>In the photos, you notice:</p>
+        <ul>
+          <li>Soil dry and crumbly, the organic layer burned away.</li>
+          <li>Green shoots pushing through ash.</li>
+          <li>Metal-roofed homes still standing; wood roofs gone.</li>
+        </ul>
+        <p>
+          “Soil’s dry,” she says. “Thin ash layer, but look, some pine cones cracked open.”
+          You examine one: resin melted, seeds spilled onto the ground.
+        </p>
+        <p>“Serotinous cones,” she explains. “Some trees need heat to start over.”</p>
 
         <h3>Field Journal</h3>
-        <p class="small prompt" data-prompt-for="field_observations">
-          Record two observations showing how the fire affected people or wildlife.
-        </p>
+        <p class="small"><strong>Prompt:</strong> Record two observations showing how the fire affected people or wildlife.</p>
         <textarea data-save="field_observations" placeholder="Observation 1...&#10;Observation 2..."></textarea>
 
         <hr class="divider" />
 
         <h3>🌱 Mission Challenge (Optional)</h3>
-        <p class="small prompt" data-prompt-for="optional_challenge">
-          Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?
-        </p>
+        <p class="small">Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?</p>
         <textarea data-save="optional_challenge" placeholder="Optional: type your answer here..."></textarea>
 
         <div class="row">
@@ -397,14 +452,18 @@
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- App -->
   <script src="app.js"></script>
 </main>
 
-<!-- Bottom Export Button -->
-<div class="exportBar">
-  <button class="exportBtn" id="exportPdfBtn">Export My Journal (PDF)</button>
+<!-- Bottom sticky export bar -->
+<div class="bottomBar" aria-label="Export bar">
+  <div class="inner">
+    <button class="exportBtn" id="exportPdfBtn">Export My Journal</button>
+    <p class="exportMsg" id="exportMsg">Exports your choices + all written answers as a PDF.</p>
+  </div>
 </div>
 
 </body>
