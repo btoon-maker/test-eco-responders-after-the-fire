@@ -468,8 +468,6 @@
     }
 
     .journal-title{ margin:0 0 6px 0; font-size: 1.35rem; }
-    .journal-subtitle{ margin:0 0 14px 0; opacity:.9; }
-
     .hl-yellow{
       color: var(--accent2);
       font-weight: 900;
@@ -524,37 +522,19 @@
       border-radius:14px;
       padding:14px;
       background: rgba(0,0,0,.14);
-      min-height: 320px;
+      min-height: 420px;
       overflow: visible;
+      position: relative;
+      box-sizing: border-box;
     }
 
-    .loop-row{
-      display:flex;
-      justify-content:center;
-      gap:16px;
-      margin: 10px 0;
-      flex-wrap: wrap;
-    }
-
-    .loop-row.mid{
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    /* FIX: remove max-width clip and allow full width */
     .dropzone{
-      width: 300px;
-      max-width: 100%;
+      width: 260px;
       border:1px dashed rgba(255,255,255,.28);
       border-radius:14px;
       padding:10px 12px;
       background: rgba(255,255,255,.05);
       box-sizing: border-box;
-    }
-
-    @media (max-width: 980px){
-      .dropzone{ width: 100%; }
-      .loop-row.mid{ flex-direction:column; }
     }
 
     .dz-label{
@@ -605,8 +585,8 @@
       justify-content:center;
     }
 
-    .loop-flow{
-      margin-top: 10px;
+    .loop-example, .science-prompt, .loop-flow{
+      margin-top:12px;
       padding:10px 12px;
       border-radius:12px;
       background: rgba(255,255,255,.06);
@@ -616,15 +596,61 @@
       box-sizing: border-box;
     }
 
-    .loop-example, .science-prompt{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      font-size:.95rem;
+    /* ---- NEW: circle layout ---- */
+    .loop-ring{
+      position: relative;
       width: 100%;
-      box-sizing: border-box;
+      height: 340px;
+      min-height: 340px;
+      margin-top: 6px;
+    }
+
+    .loop-ring svg{
+      position:absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events:none;
+      overflow: visible;
+    }
+
+    .dz-top{
+      position:absolute;
+      left:50%;
+      top: 6px;
+      transform: translateX(-50%);
+    }
+    .dz-right{
+      position:absolute;
+      right: 6px;
+      top:50%;
+      transform: translateY(-50%);
+    }
+    .dz-bottom{
+      position:absolute;
+      left:50%;
+      bottom: 6px;
+      transform: translateX(-50%);
+    }
+    .dz-left{
+      position:absolute;
+      left: 6px;
+      top:50%;
+      transform: translateY(-50%);
+    }
+
+    @media (max-width: 980px){
+      .loop-ring{
+        height: 520px;
+        min-height: 520px;
+      }
+      .dropzone{ width: 100%; max-width: 100%; }
+      .dz-top, .dz-right, .dz-bottom, .dz-left{
+        position: static;
+        transform: none;
+        margin-top: 10px;
+      }
+      .loop-ring svg{ display:none; }
     }
 
     .reflection-grid{
