@@ -1,9 +1,4 @@
-/* Eco-Responders Single-Page Lesson Builder
-   Changes in this revision ONLY:
-   - Make a Choice: only the chosen branch section appears; switching choice removes the other branch section(s)
-   - Dropdown arrows are handled in CSS (index.html)
-   - Export PDF: ONLY selected choices + journal prompts + student text responses (no narrative page text)
-*/
+/* Eco-Responders Single-Page Lesson Builder */
 
 const STORAGE_PREFIX = "eco_v2_";
 const STATE_KEY = `${STORAGE_PREFIX}state`;
@@ -24,7 +19,7 @@ const exportBtn = document.getElementById("exportBtn");
 
 let qrInstance = null;
 
-// -------------------- SCRIPT DATA (wording copied exactly) --------------------
+// -------------------- SCRIPT DATA (wording copied exactly for lesson) --------------------
 const SCRIPT = {
   lessonTitle: "Eco-Responders",
   sections: [
@@ -189,7 +184,10 @@ With your data uploaded, you now need to understand the field conditions.`
 Predict what might happen to the forest next year if rainfall continues to drop and temperatures stay high. Use data to support your prediction.`,
             saveKey: "noaa_mission_challenge"
           }
-        }
+        },
+
+        /* NEW Continue after branch -> interactive */
+        { type: "buttonReveal", label: "Continue", reveal: "feedback_loop" }
       ]
     },
 
@@ -236,6 +234,118 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
 Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?`,
             saveKey: "field_observation_mission_challenge"
           }
+        },
+
+        /* NEW Continue after branch -> interactive */
+        { type: "buttonReveal", label: "Continue", reveal: "feedback_loop" }
+      ]
+    },
+
+    /* NEW SECTION: Feedback Loop Interactive (based on your screenshot) */
+    {
+      id: "feedback_loop",
+      title: "Feedback Loop Model: How One Change Leads to Another",
+      blocks: [
+        {
+          type: "customHTML",
+          html: `<section class="journal-card" id="feedback-loop-journal">
+  <h2 class="journal-title">Feedback Loop Model: How One Change Leads to Another</h2>
+
+  <div class="loop-example" style="margin-top:10px;">
+    <strong>Build Your Model:</strong> In the model below, please use the word bank to fill in the Feedback Loop.
+    <em>You do not need to use all the boxes if you don't want to.</em>
+  </div>
+
+  <div class="loop-layout">
+    <!-- Word bank -->
+    <aside class="word-bank" aria-label="Word bank">
+      <h3>Word Bank</h3>
+      <div class="chip-bank" id="chipBank">
+        <button class="chip" draggable="true" data-value="Human Action" type="button">Human Action</button>
+        <button class="chip" draggable="true" data-value="Environmental Changes" type="button">Environmental Changes</button>
+        <button class="chip" draggable="true" data-value="Effect on Plants/Animals" type="button">Effect on Plants/Animals</button>
+        <button class="chip" draggable="true" data-value="Effect on People/Community" type="button">Effect on People/Community</button>
+        <button class="chip" draggable="true" data-value="New Conditions / Next Fire Season" type="button">New Conditions / Next Fire Season</button>
+      </div>
+
+      <div class="bank-actions">
+        <button class="btn secondary" id="resetLoop" type="button">Reset Loop</button>
+      </div>
+
+      <p class="hint">
+        Tip: Drag chips into the boxes. Drag a placed chip back to the word bank to remove it.
+      </p>
+    </aside>
+
+    <!-- Loop drop zones -->
+    <div class="loop-canvas" aria-label="Feedback loop canvas">
+      <div class="loop-row top">
+        <div class="dropzone" data-zone="top" tabindex="0" aria-label="Dropzone top">
+          <span class="dz-label">Step 1</span>
+          <div class="dz-value" data-empty="Drop here"></div>
+        </div>
+      </div>
+
+      <div class="loop-row mid">
+        <div class="dropzone" data-zone="left" tabindex="0" aria-label="Dropzone left">
+          <span class="dz-label">Step 2</span>
+          <div class="dz-value" data-empty="Drop here"></div>
+        </div>
+
+        <div class="loop-arrows" aria-hidden="true">
+          <div class="arrow a1">↷</div>
+          <div class="arrow a2">→</div>
+          <div class="arrow a3">↓</div>
+          <div class="arrow a4">←</div>
+        </div>
+
+        <div class="dropzone" data-zone="right" tabindex="0" aria-label="Dropzone right">
+          <span class="dz-label">Step 3</span>
+          <div class="dz-value" data-empty="Drop here"></div>
+        </div>
+      </div>
+
+      <div class="loop-row bottom">
+        <div class="dropzone" data-zone="bottom" tabindex="0" aria-label="Dropzone bottom">
+          <span class="dz-label">Step 4</span>
+          <div class="dz-value" data-empty="Drop here"></div>
+        </div>
+      </div>
+
+      <div class="loop-example">
+        Example: Over-clearing → erosion → fewer plants → hotter soil → faster next fire
+      </div>
+
+      <div class="science-prompt">
+        <strong>Think Like a Scientist:</strong> If one condition changed (like rainfall or replanting),
+        which part of the loop would change first?
+      </div>
+    </div>
+  </div>
+
+  <!-- Reflection -->
+  <div class="loop-example" style="margin-top:12px;">
+    <strong>Reflect on The Loop:</strong> In the table below: Explain what happens when your loop repeats.
+    Does it make the ecosystem stronger or weaker? How could humans change one part of the loop to improve recovery?
+  </div>
+
+  <div class="reflection-grid">
+    <div class="reflection-card">
+      <h3>When the Loop Repeats…</h3>
+      <textarea id="loopRepeats" rows="5" placeholder=""></textarea>
+    </div>
+
+    <div class="reflection-card">
+      <h3>One Change that Could Help…</h3>
+      <textarea id="loopHelp" rows="5" placeholder=""></textarea>
+    </div>
+  </div>
+
+  <div class="journal-actions">
+    <button class="btn" id="saveLoopJournal" type="button">Save to Journal</button>
+    <span class="save-status" id="loopSaveStatus" aria-live="polite"></span>
+  </div>
+</section>`
         }
       ]
     }
@@ -301,6 +411,9 @@ function renderAll(){
     "Images are currently placeholders until you upload them to ./images/ with the exact filenames shown in the script.";
 
   updateResumeArtifacts();
+
+  // initialize interactive (only if it exists on the page)
+  initFeedbackLoopInteractive();
 }
 
 function renderSection(sec, idx){
@@ -310,7 +423,7 @@ function renderSection(sec, idx){
   const card = document.createElement("div");
   card.className = "card";
 
-  // subtle per-section tint (kept as-is)
+  // subtle per-section tint
   const tintA = `hsla(${(idx*35)%360}, 55%, 55%, 0.12)`;
   const tintB = `hsla(${(idx*35 + 18)%360}, 55%, 45%, 0.06)`;
   card.style.background = `linear-gradient(180deg, rgba(16,38,36,0.92), rgba(16,38,36,0.78)),
@@ -405,6 +518,12 @@ function renderBlock(b){
 
   if(b.type === "journal"){
     return renderJournal(b);
+  }
+
+  if(b.type === "customHTML"){
+    const holder = document.createElement("div");
+    holder.innerHTML = b.html;
+    return holder;
   }
 
   const f = document.createElement("div");
@@ -526,7 +645,7 @@ function renderChoice(choiceBlock){
     contBtn.addEventListener("click", () => {
       const target = pending.continueReveal;
 
-      // Enforce exclusivity again: revealing one branch means only that branch exists after parent
+      // Enforce exclusivity: revealing one branch means only that branch exists after parent
       const parentId = findChoiceParentSectionId(choiceBlock.choiceKey);
       if(parentId){
         pruneRevealedToSection(parentId);
@@ -834,6 +953,30 @@ function getJournalItemsInOrder(){
       }
     }
   }
+
+  // Add feedback loop saved entries (if present)
+  if(state.journals.feedback_loop_model !== undefined){
+    items.push({
+      promptTitleLine: "Feedback Loop Model",
+      promptText: "Your placed steps:",
+      saveKey: "feedback_loop_model"
+    });
+  }
+  if(state.journals.feedback_loop_repeats !== undefined){
+    items.push({
+      promptTitleLine: "When the Loop Repeats…",
+      promptText: "",
+      saveKey: "feedback_loop_repeats"
+    });
+  }
+  if(state.journals.feedback_loop_help !== undefined){
+    items.push({
+      promptTitleLine: "One Change that Could Help…",
+      promptText: "",
+      saveKey: "feedback_loop_help"
+    });
+  }
+
   return items;
 }
 
@@ -880,6 +1023,180 @@ function smoothScrollTo(el){
   const r = el.getBoundingClientRect();
   const target = window.scrollY + r.top - 110;
   window.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+}
+
+// -------------------- Feedback Loop Interactive (INIT + SAVE INTO STATE) --------------------
+function initFeedbackLoopInteractive(){
+  const root = document.getElementById("feedback-loop-journal");
+  if(!root) return;
+  if(root.dataset.initialized === "1") return;
+  root.dataset.initialized = "1";
+
+  const LS_KEY = "eco_feedback_loop_journal_v1";
+
+  function qs(sel, r=root){ return r.querySelector(sel); }
+  function qsa(sel, r=root){ return Array.from(r.querySelectorAll(sel)); }
+
+  const bank = qs("#chipBank");
+  const dropzones = qsa(".dropzone");
+  const resetBtn = qs("#resetLoop");
+  const saveBtn = qs("#saveLoopJournal");
+  const statusEl = qs("#loopSaveStatus");
+  const repeatsEl = qs("#loopRepeats");
+  const helpEl = qs("#loopHelp");
+
+  if(!bank || !dropzones.length || !resetBtn || !saveBtn || !statusEl || !repeatsEl || !helpEl) return;
+
+  let draggedValue = null;
+
+  function onChipDragStart(e){
+    const val = e.target?.dataset?.value;
+    if(!val) return;
+    draggedValue = val;
+    e.dataTransfer.setData("text/plain", val);
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function placeChip(zoneEl, value){
+    const valueHost = zoneEl.querySelector(".dz-value");
+    valueHost.innerHTML = "";
+
+    const chip = document.createElement("div");
+    chip.className = "placed-chip";
+    chip.setAttribute("draggable", "true");
+    chip.dataset.value = value;
+    chip.innerHTML = `<span>${value}</span><span class="remove-x" title="Remove" aria-label="Remove">×</span>`;
+
+    chip.addEventListener("dragstart", (e)=>{
+      draggedValue = chip.dataset.value;
+      e.dataTransfer.setData("text/plain", draggedValue);
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("source", "zone");
+      e.dataTransfer.setData("zoneId", zoneEl.dataset.zone);
+    });
+
+    chip.addEventListener("click", (e)=>{
+      if(e.target && e.target.classList.contains("remove-x")){
+        valueHost.innerHTML = "";
+        persistAutosave();
+      }
+    });
+
+    valueHost.appendChild(chip);
+    persistAutosave();
+  }
+
+  dropzones.forEach(zone=>{
+    zone.addEventListener("dragover", (e)=>{
+      e.preventDefault();
+      zone.classList.add("dragover");
+    });
+    zone.addEventListener("dragleave", ()=> zone.classList.remove("dragover"));
+    zone.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      zone.classList.remove("dragover");
+      const val = e.dataTransfer.getData("text/plain") || draggedValue;
+      if(!val) return;
+      placeChip(zone, val);
+    });
+  });
+
+  bank.addEventListener("dragover", (e)=> e.preventDefault());
+  bank.addEventListener("drop", (e)=>{
+    e.preventDefault();
+    const source = e.dataTransfer.getData("source");
+    const zoneId = e.dataTransfer.getData("zoneId");
+    if(source === "zone" && zoneId){
+      const zone = qs(`.dropzone[data-zone="${zoneId}"]`);
+      if(zone){
+        zone.querySelector(".dz-value").innerHTML = "";
+        persistAutosave();
+      }
+    }
+  });
+
+  qsa("#chipBank .chip").forEach(ch => ch.addEventListener("dragstart", onChipDragStart));
+
+  function collectLoopData(){
+    const placements = {};
+    dropzones.forEach(z=>{
+      const placed = z.querySelector(".placed-chip");
+      placements[z.dataset.zone] = placed ? placed.dataset.value : "";
+    });
+
+    return {
+      placements,
+      reflections: {
+        loopRepeats: repeatsEl.value,
+        loopHelp: helpEl.value
+      },
+      savedAt: new Date().toISOString()
+    };
+  }
+
+  function persistAutosave(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify(collectLoopData()));
+    }catch(e){}
+  }
+
+  function loadSaved(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+
+      if(data?.placements){
+        Object.entries(data.placements).forEach(([zoneId, val])=>{
+          if(!val) return;
+          const zone = qs(`.dropzone[data-zone="${zoneId}"]`);
+          if(zone) placeChip(zone, val);
+        });
+      }
+      if(data?.reflections){
+        repeatsEl.value = data.reflections.loopRepeats || "";
+        helpEl.value = data.reflections.loopHelp || "";
+      }
+    }catch(e){}
+  }
+
+  resetBtn.addEventListener("click", ()=>{
+    dropzones.forEach(z => z.querySelector(".dz-value").innerHTML = "");
+    repeatsEl.value = "";
+    helpEl.value = "";
+    persistAutosave();
+    statusEl.textContent = "Reset.";
+    setTimeout(()=> statusEl.textContent = "", 1200);
+  });
+
+  // Save to JOURNAL STATE (so Export PDF includes it)
+  saveBtn.addEventListener("click", ()=>{
+    const data = collectLoopData();
+
+    const stepsText =
+      `Step 1: ${data.placements.top || ""}\n` +
+      `Step 2: ${data.placements.left || ""}\n` +
+      `Step 3: ${data.placements.right || ""}\n` +
+      `Step 4: ${data.placements.bottom || ""}`;
+
+    state.journals.feedback_loop_model = stepsText;
+    state.journals.feedback_loop_repeats = (data.reflections.loopRepeats || "");
+    state.journals.feedback_loop_help = (data.reflections.loopHelp || "");
+
+    saveStateToLocal();
+
+    statusEl.textContent = "Saved to Journal.";
+    setTimeout(()=> statusEl.textContent = "", 1400);
+  });
+
+  [repeatsEl, helpEl].forEach(el=>{
+    el.addEventListener("input", ()=>{
+      window.clearTimeout(el._t);
+      el._t = window.setTimeout(persistAutosave, 250);
+    });
+  });
+
+  loadSaved();
 }
 
 // Initial render
