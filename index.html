@@ -9,7 +9,7 @@
       --bg:#071412;
       --bg2:#0a1c19;
       --panel:#102624;
-      --text:#0b1a18;
+      --text:#e9f5f2;
       --muted:#b9d7d0;
       --accent:#45d39a;
       --accent2:#ffcf5a;
@@ -25,7 +25,10 @@
     body{
       margin:0;
       font-family: var(--font-body);
-      background: #ffffff;
+      background:
+        radial-gradient(900px 520px at 18% 10%, rgba(69,211,154,0.10), transparent 58%),
+        radial-gradient(900px 520px at 90% 18%, rgba(255,207,90,0.09), transparent 58%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
       color: var(--text);
     }
 
