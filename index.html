@@ -6,7 +6,7 @@
   <title>Eco-Responders Lesson</title>
   <style>
     :root{
-      --bg:#071412;                 /* page background (darker, distinct) */
+      --bg:#071412;
       --bg2:#0a1c19;
       --panel:#102624;
       --text:#e9f5f2;
@@ -14,7 +14,7 @@
       --accent:#45d39a;
       --accent2:#ffcf5a;
       --header:#0f3b33;
-      --resume:#2a1f3f;             /* different from header */
+      --resume:#2a1f3f;
       --border:rgba(233,245,242,0.18);
       --shadow: 0 10px 30px rgba(0,0,0,0.35);
       --radius: 14px;
@@ -48,7 +48,7 @@
       gap:12px;
       align-items:center;
       justify-content:space-between;
-      padding-right: 260px; /* leave space for top-right widget */
+      padding-right: 260px;
     }
 
     .title{
@@ -66,7 +66,7 @@
 
     main{
       max-width: 980px;
-      margin: 18px auto 150px auto; /* space for export button */
+      margin: 18px auto 150px auto;
       padding: 0 18px;
     }
 
@@ -75,10 +75,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
-      background: linear-gradient(180deg,
-        rgba(16,38,36,0.92),
-        rgba(16,38,36,0.78)
-      );
+      background: linear-gradient(180deg, rgba(16,38,36,0.92), rgba(16,38,36,0.78));
     }
 
     .section{
@@ -115,11 +112,11 @@
     .two-col{
       display:flex;
       gap:16px;
-      align-items: stretch; /* (2) stretch columns to same height */
+      align-items: stretch;
     }
     .two-col .col-text{
       flex: 1 1 auto;
-      display:flex;                 /* help the text column fill height */
+      display:flex;
     }
     .two-col .col-text > .content{
       flex: 1 1 auto;
@@ -168,7 +165,7 @@
       font-size: 13px;
     }
 
-    /* (3) Dropdown arrows */
+    /* Dropdowns with arrows right next to text */
     details.dropdown{
       margin-top: 14px;
       border: 1px solid var(--border);
@@ -183,10 +180,12 @@
       color: var(--accent2);
       list-style:none;
       user-select:none;
-      display:flex;
+
+      /* CHANGED: keep arrow right next to text */
+      display:inline-flex;
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
+      justify-content:flex-start;
+      gap:8px;
     }
     details.dropdown summary::-webkit-details-marker{display:none;}
     details.dropdown summary::after{
@@ -328,7 +327,6 @@
       color: var(--muted);
     }
 
-    /* (1) Top-right compact widget: ONLY Pause button + paste box */
     .resume-widget{
       position: fixed;
       top: 10px;
@@ -369,7 +367,6 @@
       line-height: 1.35;
     }
 
-    /* (1) Modal popout in middle with code + QR (hidden until button press) */
     .modal-backdrop{
       position: fixed;
       inset: 0;
@@ -433,7 +430,6 @@
       justify-content:center;
     }
 
-    /* Fixed Export Button */
     .export-bar{
       position: fixed;
       left: 0;
@@ -473,7 +469,6 @@
     </div>
   </header>
 
-  <!-- (1) Top-right widget: only Pause button + Paste Resume Code -->
   <aside class="resume-widget" aria-label="Pause & Resume Later widget">
     <div class="rw-body">
       <div class="rw-row">
@@ -493,7 +488,6 @@
     </div>
   </aside>
 
-  <!-- (1) Modal pop-out for code + QR -->
   <div class="modal-backdrop" id="pauseModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Pause & Resume Later">
       <div class="modal-head">
@@ -523,14 +517,12 @@
     <div class="note" id="imagesNote"></div>
   </main>
 
-  <!-- Fixed Export My Journal -->
   <div class="export-bar">
     <div class="export-inner">
       <button class="btn primary" id="exportBtn" type="button">Export My Journal (PDF)</button>
     </div>
   </div>
 
-  <!-- External libs (plain JS, no build tools) -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
