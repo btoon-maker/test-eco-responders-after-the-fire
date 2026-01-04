@@ -25,8 +25,7 @@
 
     .btn {
       background:#2f5d50; color:#fff; border:none; padding:0.6rem 1rem; border-radius:10px; cursor:pointer;
-      font-size:1rem;
-      font-weight: 800;
+      font-size:1rem; font-weight: 900;
     }
     .btn.secondary { background:#405a53; }
     .btn.ghost { background: transparent; border: 1px solid #2f5d50; color:#2f5d50; }
@@ -67,16 +66,16 @@
       padding: 0.75rem 0.9rem;
       margin: 0.75rem 0;
     }
-    details summary { cursor:pointer; font-weight: 800; color:#1f3b34; }
+    details summary { cursor:pointer; font-weight: 900; color:#1f3b34; }
 
-    /* ---------- TOP-RIGHT PANEL (ALWAYS) ---------- */
+    /* ---------- TOP-RIGHT PANEL (ALWAYS present) ---------- */
     .savePanel {
       position: fixed;
       top: 12px;
       right: 12px;
-      width: 250px;
+      width: 235px; /* smaller */
       max-width: calc(100vw - 24px);
-      background: #2c3e50;
+      background: #2c3e50; /* different color */
       color: #fff;
       border-radius: 14px;
       padding: 10px;
@@ -89,14 +88,14 @@
       width: 100%;
       border: none;
       border-radius: 10px;
-      padding: 10px 10px;
-      font-size: 0.95rem;
+      padding: 9px 10px;
+      font-size: 0.92rem;
       cursor: pointer;
       background: #16a085;
       color: #fff;
       font-weight: 900;
     }
-    .savePanel label { display:block; margin-top: 10px; font-weight: 800; opacity: 0.95; }
+    .savePanel label { display:block; margin-top: 10px; font-weight: 900; opacity: 0.95; }
     .savePanel input {
       width: 100%;
       border-radius: 10px;
@@ -114,7 +113,7 @@
       flex: 1;
       border: none;
       border-radius: 10px;
-      padding: 9px 10px;
+      padding: 8px 10px;
       font-size: 0.9rem;
       cursor: pointer;
       background: rgba(255,255,255,0.18);
@@ -124,7 +123,7 @@
     .savePanel .smallBtn.primary { background:#ffd166; color:#2b2b2b; }
     .savePanel .status { margin-top: 8px; opacity: 0.9; font-size: 0.8rem; white-space: pre-wrap; }
 
-    /* ---------- Modal ---------- */
+    /* ---------- Center Modal ---------- */
     .overlay {
       position: fixed;
       inset: 0;
@@ -167,18 +166,6 @@
     #qrCodeModal { display:flex; justify-content:center; }
     .qrHintModal { margin-top: 8px; text-align:center; font-size: 0.9rem; color:#455; }
     .modalStatus { margin-top: 10px; font-size: 0.92rem; color:#455; white-space: pre-wrap; }
-
-    /* ---------- Locked sections (NOT hidden) ---------- */
-    .locked {
-      opacity: 0.35;
-      pointer-events: none;
-      filter: grayscale(0.2);
-    }
-    .lockedNotice {
-      margin: 0.25rem 0 0.75rem 0;
-      font-size: 0.9rem;
-      color:#556;
-    }
 
     /* ---------- Bottom sticky Export ---------- */
     .bottomBar {
@@ -226,14 +213,14 @@
 <!-- TOP-RIGHT PANEL (ALWAYS) -->
 <section class="savePanel" aria-label="Pause and Resume Panel">
   <h4>Pause</h4>
-  <button class="miniBtn" id="pauseResumeBtn">Pause & Resume Later</button>
+  <button type="button" class="miniBtn" id="pauseResumeBtn">Pause & Resume Later</button>
 
   <label for="resumeInputTop">Paste Resume Code</label>
   <input id="resumeInputTop" type="text" placeholder="Paste code here..." />
 
   <div class="twoBtns">
-    <button class="smallBtn primary" id="resumeTopBtn">Resume</button>
-    <button class="smallBtn" id="clearTopBtn">Clear</button>
+    <button type="button" class="smallBtn primary" id="resumeTopBtn">Resume</button>
+    <button type="button" class="smallBtn" id="clearTopBtn">Clear</button>
   </div>
 
   <div class="status" id="saveStatus">Ready.</div>
@@ -250,9 +237,9 @@
         <div class="codeBox" id="resumeCodeBox"></div>
 
         <div class="btnRow">
-          <button class="btnPrimary" id="copyCodeBtn">Copy Code</button>
-          <button class="btnSecondary" id="closeModalBtn">Close</button>
-          <button class="btnDanger" id="resetBtn">Reset</button>
+          <button type="button" class="btnPrimary" id="copyCodeBtn">Copy Code</button>
+          <button type="button" class="btnSecondary" id="closeModalBtn">Close</button>
+          <button type="button" class="btnDanger" id="resetBtn">Reset</button>
         </div>
 
         <div class="modalStatus" id="modalStatus"></div>
@@ -274,72 +261,87 @@
     </p>
   </div>
 
-  <!-- SECTION 1: Home / Setting the Story (always visible) -->
-  <section id="home">
-    <h2>Setting the Story</h2>
+  <!-- The story grows inside this container -->
+  <div id="story"></div>
 
-    <div class="split">
-      <div>
-        <p>The air smells faintly of pine and smoke, reminders that nature is constantly changing.</p>
-        <p>As an Eco-Responder, you’ve learned that every fire tells two stories: one of loss and one of renewal.</p>
-        <p>This week, your team is on alert. Just over the ridge, a town called Forest Glen was hit by a wildfire two weeks ago.</p>
-        <p>Your town, Maple Valley, sits just downwind.</p>
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        <details>
-          <summary>What to Expect</summary>
-          <p>As an Eco-Responder, your job is to find out how wildfires start, spread, and change habitats.</p>
-          <p>You’ll look at real evidence, from NOAA weather data to FEMA field reports, to spot patterns and causes.</p>
+  <!-- App -->
+  <script src="app.js"></script>
 
-          <h3 style="margin-top:0.75rem;">🔍 Your Mission</h3>
-          <ul>
-            <li>Add notes in your Field Journal as you move through each part of the story.</li>
-            <li>Use your clues and ideas to make a final plan that helps Maple Valley rebuild safely for both people and wildlife.</li>
-            <li>You’ll also make choices that guide what you see and discover along the way.</li>
-          </ul>
+  <!-- =========================
+       Templates (only added when clicked)
+       ========================= -->
 
-          <p>You will encounter two kinds of challenges:</p>
-          <p><strong>🔬 Think Like a Scientist</strong> (found inside your Field Journal)</p>
-          <p><strong>🌱 Mission Challenges</strong> (optional deeper dives inside the mission)</p>
-        </details>
+  <!-- Setting the Story (always first) -->
+  <template id="tpl-setting">
+    <section id="setting">
+      <h2>Setting the Story</h2>
 
-        <details>
-          <summary>Mission Glossary: Key Terms to Know</summary>
-          <p><strong>🔥 Fuel-Moisture</strong><br/>How much water is stored in plants and soil. When it’s low, leaves and branches dry out and burn more easily.</p>
-          <p><strong>🚩 Red Flag Warning</strong><br/>A weather alert from NOAA when hot, dry, and windy conditions make wildfires more likely to spread.</p>
-          <p><strong>🏠 Defensible Space</strong><br/>A safety zone (about 30 feet around a home) kept clear of flammable materials to slow or stop wildfire spread.</p>
-          <p><strong>🏗 Fire-Resistant Materials</strong><br/>Building materials (like stucco or metal roofs) that don’t easily burn, protecting homes from embers and heat.</p>
-          <p><strong>♻ Feedback Loop</strong><br/>When one change causes another that strengthens the first (example: fewer trees → hotter ground → more fires).</p>
-          <p><strong>🌎 Ecosystem Recovery</strong><br/>How plants, animals, and soil rebuild after a disturbance like a wildfire.</p>
-          <p><strong>🏛 FEMA</strong><br/>The agency that helps people and communities prepare for and recover from natural disasters.</p>
-          <p><strong>☁ NOAA</strong><br/>The agency that studies Earth’s weather and climate to help predict and prevent environmental hazards.</p>
-        </details>
+      <div class="split">
+        <div>
+          <p>The air smells faintly of pine and smoke, reminders that nature is constantly changing.</p>
+          <p>As an Eco-Responder, you’ve learned that every fire tells two stories: one of loss and one of renewal.</p>
+          <p>This week, your team is on alert. Just over the ridge, a town called Forest Glen was hit by a wildfire two weeks ago.</p>
+          <p>Your town, Maple Valley, sits just downwind.</p>
 
-        <div class="row">
-          <button class="btn secondary" id="beginMissionBtn">Begin Mission</button>
+          <details>
+            <summary>What to Expect</summary>
+            <p>As an Eco-Responder, your job is to find out how wildfires start, spread, and change habitats.</p>
+            <p>You’ll look at real evidence, from NOAA weather data to FEMA field reports, to spot patterns and causes.</p>
+
+            <h3 style="margin-top:0.75rem;">🔍 Your Mission</h3>
+            <ul>
+              <li>Add notes in your Field Journal as you move through each part of the story.</li>
+              <li>Use your clues and ideas to make a final plan that helps Maple Valley rebuild safely for both people and wildlife.</li>
+              <li>You’ll also make choices that guide what you see and discover along the way.</li>
+            </ul>
+
+            <p>You will encounter two kinds of challenges:</p>
+            <p><strong>🔬 Think Like a Scientist</strong> (found inside your Field Journal)</p>
+            <p><strong>🌱 Mission Challenges</strong> (optional deeper dives inside the mission)</p>
+          </details>
+
+          <details>
+            <summary>Mission Glossary: Key Terms to Know</summary>
+            <p><strong>🔥 Fuel-Moisture</strong><br/>How much water is stored in plants and soil. When it’s low, leaves and branches dry out and burn more easily.</p>
+            <p><strong>🚩 Red Flag Warning</strong><br/>A weather alert from NOAA when hot, dry, and windy conditions make wildfires more likely to spread.</p>
+            <p><strong>🏠 Defensible Space</strong><br/>A safety zone (about 30 feet around a home) kept clear of flammable materials to slow or stop wildfire spread.</p>
+            <p><strong>🏗 Fire-Resistant Materials</strong><br/>Building materials (like stucco or metal roofs) that don’t easily burn, protecting homes from embers and heat.</p>
+            <p><strong>♻ Feedback Loop</strong><br/>When one change causes another that strengthens the first (example: fewer trees → hotter ground → more fires).</p>
+            <p><strong>🌎 Ecosystem Recovery</strong><br/>How plants, animals, and soil rebuild after a disturbance like a wildfire.</p>
+            <p><strong>🏛 FEMA</strong><br/>The agency that helps people and communities prepare for and recover from natural disasters.</p>
+            <p><strong>☁ NOAA</strong><br/>The agency that studies Earth’s weather and climate to help predict and prevent environmental hazards.</p>
+          </details>
+
+          <div class="row">
+            <button type="button" class="btn secondary" id="beginMissionBtn">Begin Mission</button>
+          </div>
+        </div>
+
+        <div class="placeholder" aria-label="Image placeholder">
+          Image Placeholder<br/><span class="small">(right side of text)</span>
         </div>
       </div>
 
-      <div class="placeholder" aria-label="Image placeholder">
-        Image Placeholder<br/><span class="small">(right side of text)</span>
-      </div>
-    </div>
-  </section>
+      <hr class="divider" />
+    </section>
+  </template>
 
-  <hr class="divider" />
-
-  <!-- SECTION 2: Mission Start (locked until Begin Mission clicked) -->
-  <section id="missionStartWrap">
-    <h2>Mission Start</h2>
-    <p class="lockedNotice" id="lockMsgMission">Locked: Click “Begin Mission” above to continue.</p>
-
-    <div id="missionStart" class="locked">
+  <!-- The Call (Mission Start) -->
+  <template id="tpl-call">
+    <section id="call">
       <div class="split">
         <div class="placeholder" aria-label="Image placeholder">
           Image Placeholder<br/><span class="small">(left side)</span>
         </div>
 
         <div>
-          <h2>Ping! Ping! Ping!</h2>
+          <h2>The Call</h2>
+          <h3>Ping! Ping! Ping!</h3>
           <p>Your Eco-Responder tablet flashes red.</p>
           <p>Jordan, your FEMA mentor, appears on the screen.</p>
           <p>
@@ -350,28 +352,22 @@
 
           <h3>Where will you begin?</h3>
           <div class="row">
-            <button class="btn" id="choiceNoaaBtn">Analyze NOAA Weather Data First</button>
-            <button class="btn" id="choiceFieldBtn">Go Straight to the Fire Zone for Field Observation</button>
+            <button type="button" class="btn" id="choiceNoaaBtn">Analyze NOAA Weather Data First</button>
+            <button type="button" class="btn" id="choiceFieldBtn">Go Straight to the Fire Zone for Field Observation</button>
           </div>
 
           <div id="choiceFeedback" class="card" style="margin-top: 1rem; display:none;"></div>
 
-          <div class="row">
-            <button class="btn secondary" id="continueAfterChoiceBtn" disabled>Continue</button>
-          </div>
+          <hr class="divider" />
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </template>
 
-  <hr class="divider" />
-
-  <!-- SECTION 3A: NOAA (locked until Continue after NOAA choice) -->
-  <section id="noaaWrap">
-    <h2>NOAA Data Path</h2>
-    <p class="lockedNotice" id="lockMsgNoaa">Locked: Make a choice above, then click “Continue.”</p>
-
-    <div id="branchNoaa" class="locked">
+  <!-- NOAA branch -->
+  <template id="tpl-noaa">
+    <section id="noaa">
+      <h2>NOAA Data Path</h2>
       <p>
         You arrive at the mobile lab, and your tablet connects to NOAA’s drought archive.
         “See the trend? Less rain and more heat mean lower fuel moisture,” Jordan explains. “That’s a dangerous mix.
@@ -392,22 +388,20 @@
       <h3>⚡ Mission Challenge (Optional)</h3>
       <p class="small"><strong>Prompt:</strong> Add one more prediction OR one question you want to investigate next.</p>
       <textarea data-save="noaa_mission_challenge" placeholder="Optional: type here..."></textarea>
-    </div>
-  </section>
 
-  <hr class="divider" />
+      <hr class="divider" />
+    </section>
+  </template>
 
-  <!-- SECTION 3B: Field (locked until Continue after Field choice) -->
-  <section id="fieldWrap">
-    <h2>Field Observation Path</h2>
-    <p class="lockedNotice" id="lockMsgField">Locked: Make a choice above, then click “Continue.”</p>
-
-    <div id="branchField" class="locked">
+  <!-- Field branch -->
+  <template id="tpl-field">
+    <section id="field">
       <div class="split">
         <div class="placeholder" aria-label="Image placeholder">
           Image Placeholder (left)
         </div>
         <div>
+          <h2>Field Observation Path</h2>
           <p>
             You ride beside Ranger Marisol into Forest Glen. Your tablet displays photos from Ranger Marisol.
           </p>
@@ -438,24 +432,19 @@
           <h3>⚡ Mission Challenge (Optional)</h3>
           <p class="small"><strong>Prompt:</strong> Add one more observation you think matters most, and explain why.</p>
           <textarea data-save="field_mission_challenge" placeholder="Optional: type here..."></textarea>
+
+          <hr class="divider" />
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </template>
 
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- App -->
-  <script src="app.js"></script>
 </main>
 
 <!-- Bottom sticky export bar -->
 <div class="bottomBar" aria-label="Export bar">
   <div class="inner">
-    <button class="exportBtn" id="exportPdfBtn">Export My Journal</button>
+    <button type="button" class="exportBtn" id="exportPdfBtn">Export My Journal</button>
     <p class="exportMsg" id="exportMsg">Exports your choices + all written answers as a PDF.</p>
   </div>
 </div>
