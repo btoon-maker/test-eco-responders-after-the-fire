@@ -1,4 +1,4 @@
-/* Eco-Responders Single-Page Lesson Builder *
+/* Eco-Responders Single-Page Lesson Builder */
 
 const STORAGE_PREFIX = "eco_v2_";
 const STATE_KEY = `${STORAGE_PREFIX}state`;
