@@ -28,7 +28,6 @@
       font-size:1rem; font-weight: 900;
     }
     .btn.secondary { background:#405a53; }
-    .btn.ghost { background: transparent; border: 1px solid #2f5d50; color:#2f5d50; }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     textarea {
@@ -68,14 +67,14 @@
     }
     details summary { cursor:pointer; font-weight: 900; color:#1f3b34; }
 
-    /* ---------- TOP-RIGHT PANEL (ALWAYS present) ---------- */
+    /* TOP-RIGHT PANEL (ALWAYS) */
     .savePanel {
       position: fixed;
       top: 12px;
       right: 12px;
-      width: 235px; /* smaller */
+      width: 235px;
       max-width: calc(100vw - 24px);
-      background: #2c3e50; /* different color */
+      background: #2c3e50;
       color: #fff;
       border-radius: 14px;
       padding: 10px;
@@ -123,7 +122,7 @@
     .savePanel .smallBtn.primary { background:#ffd166; color:#2b2b2b; }
     .savePanel .status { margin-top: 8px; opacity: 0.9; font-size: 0.8rem; white-space: pre-wrap; }
 
-    /* ---------- Center Modal ---------- */
+    /* Modal */
     .overlay {
       position: fixed;
       inset: 0;
@@ -167,7 +166,7 @@
     .qrHintModal { margin-top: 8px; text-align:center; font-size: 0.9rem; color:#455; }
     .modalStatus { margin-top: 10px; font-size: 0.92rem; color:#455; white-space: pre-wrap; }
 
-    /* ---------- Bottom sticky Export ---------- */
+    /* Bottom sticky Export */
     .bottomBar {
       position: fixed;
       left: 0;
@@ -210,7 +209,7 @@
   <div class="small">Prototype • saves progress • Resume Code + QR</div>
 </header>
 
-<!-- TOP-RIGHT PANEL (ALWAYS) -->
+<!-- TOP-RIGHT PANEL -->
 <section class="savePanel" aria-label="Pause and Resume Panel">
   <h4>Pause</h4>
   <button type="button" class="miniBtn" id="pauseResumeBtn">Pause & Resume Later</button>
@@ -226,7 +225,7 @@
   <div class="status" id="saveStatus">Ready.</div>
 </section>
 
-<!-- CENTER MODAL -->
+<!-- MODAL -->
 <div class="overlay" id="overlay" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-label="Pause and Resume Later">
     <h2>Pause & Resume Later</h2>
@@ -261,22 +260,10 @@
     </p>
   </div>
 
-  <!-- The story grows inside this container -->
+  <!-- Story renders here -->
   <div id="story"></div>
 
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- App -->
-  <script src="app.js"></script>
-
-  <!-- =========================
-       Templates (only added when clicked)
-       ========================= -->
-
-  <!-- Setting the Story (always first) -->
+  <!-- Templates MUST exist before app.js runs -->
   <template id="tpl-setting">
     <section id="setting">
       <h2>Setting the Story</h2>
@@ -331,7 +318,6 @@
     </section>
   </template>
 
-  <!-- The Call (Mission Start) -->
   <template id="tpl-call">
     <section id="call">
       <div class="split">
@@ -364,7 +350,6 @@
     </section>
   </template>
 
-  <!-- NOAA branch -->
   <template id="tpl-noaa">
     <section id="noaa">
       <h2>NOAA Data Path</h2>
@@ -393,7 +378,6 @@
     </section>
   </template>
 
-  <!-- Field branch -->
   <template id="tpl-field">
     <section id="field">
       <div class="split">
@@ -439,15 +423,20 @@
     </section>
   </template>
 
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- IMPORTANT: app.js LAST, after templates exist -->
+  <script src="app.js"></script>
 </main>
 
-<!-- Bottom sticky export bar -->
 <div class="bottomBar" aria-label="Export bar">
   <div class="inner">
     <button type="button" class="exportBtn" id="exportPdfBtn">Export My Journal</button>
     <p class="exportMsg" id="exportMsg">Exports your choices + all written answers as a PDF.</p>
   </div>
 </div>
-
 </body>
 </html>
