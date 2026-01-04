@@ -1,11 +1,12 @@
 // ===========================
-// State keys
+// Save keys
 // ===========================
 const SAVE_KEYS = [
-  "unlock_mission",
-  "start_choice",               // "noaa" or "field"
-  "unlock_noaa",
-  "unlock_field",
+  "added_setting",
+  "added_call",
+  "choice_start",          // "noaa" | "field"
+  "added_noaa",
+  "added_field",
 
   // writing
   "noaa_prediction",
@@ -16,7 +17,7 @@ const SAVE_KEYS = [
 ];
 
 // ===========================
-// Helpers
+// LocalStorage helpers
 // ===========================
 function getLS(key) { return localStorage.getItem(key) || ""; }
 function setLS(key, val) { localStorage.setItem(key, val); }
@@ -31,32 +32,16 @@ function setModalStatus(msg) {
   if (el) el.textContent = msg;
 }
 
-function unlockBlock(blockId, msgId) {
-  const block = document.getElementById(blockId);
-  const msg = document.getElementById(msgId);
-  if (block) block.classList.remove("locked");
-  if (msg) msg.style.display = "none";
-}
-
-function lockBlock(blockId, msgId, msgText) {
-  const block = document.getElementById(blockId);
-  const msg = document.getElementById(msgId);
-  if (block) block.classList.add("locked");
-  if (msg) {
-    msg.style.display = "block";
-    if (msgText) msg.textContent = msgText;
-  }
-}
-
-function scrollToId(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+function scrollToEl(el) {
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // ===========================
-// Autosave
+// Autosave wiring (works for new sections added later)
 // ===========================
-function wireAutosave() {
-  document.querySelectorAll("textarea[data-save]").forEach((ta) => {
+function wireAutosaveWithin(root) {
+  root.querySelectorAll("textarea[data-save]").forEach((ta) => {
     const key = ta.dataset.save;
     ta.value = getLS(key);
     ta.addEventListener("input", () => setLS(key, ta.value));
@@ -64,78 +49,35 @@ function wireAutosave() {
 }
 
 // ===========================
-// Resume Code encode/decode
+// Template rendering
 // ===========================
-function collectState() {
-  const state = {};
-  SAVE_KEYS.forEach(k => state[k] = getLS(k));
-  return state;
+function addTemplateOnce(templateId, markerKey) {
+  if (getLS(markerKey) === "yes") return null;
+
+  const tpl = document.getElementById(templateId);
+  const story = document.getElementById("story");
+  if (!tpl || !story) return null;
+
+  const node = tpl.content.cloneNode(true);
+  story.appendChild(node);
+
+  setLS(markerKey, "yes");
+
+  // wire autosave for any new textareas
+  wireAutosaveWithin(story);
+
+  // return last section element appended (best effort)
+  const sections = story.querySelectorAll("section");
+  return sections[sections.length - 1] || null;
 }
 
-function applyState(state) {
-  SAVE_KEYS.forEach(k => {
-    if (typeof state[k] === "string") setLS(k, state[k]);
-  });
-
-  // refill textareas
-  document.querySelectorAll("textarea[data-save]").forEach((ta) => {
-    ta.value = getLS(ta.dataset.save);
-  });
-
-  // restore UI unlocks
-  restoreUnlocks();
-  setTopStatus("Resumed!");
-}
-
-function encodeResumeCode(stateObj) {
-  const json = JSON.stringify(stateObj);
-  const compressed = LZString.compressToEncodedURIComponent(json);
-  return `R1.${compressed}`;
-}
-
-function decodeResumeCode(code) {
-  const trimmed = (code || "").trim();
-  if (!trimmed.startsWith("R1.")) throw new Error("That doesn't look like a valid Resume Code.");
-  const compressed = trimmed.slice(3);
-  const json = LZString.decompressFromEncodedURIComponent(compressed);
-  if (!json) throw new Error("That code couldn't be read. Check for missing characters.");
-  return JSON.parse(json);
+function ensureTemplate(templateId, markerKey) {
+  if (getLS(markerKey) === "yes") return null;
+  return addTemplateOnce(templateId, markerKey);
 }
 
 // ===========================
-// QR
-// ===========================
-function buildResumeUrl(code) {
-  const url = new URL(window.location.href);
-  url.searchParams.set("resume", code);
-  return url.toString();
-}
-
-function renderQrInto(el, text) {
-  if (!el) return;
-  el.innerHTML = "";
-  new QRCode(el, {
-    text,
-    width: 160,
-    height: 160,
-    correctLevel: QRCode.CorrectLevel.M,
-  });
-}
-
-// ===========================
-// Clipboard
-// ===========================
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// ===========================
-// Choice feedback
+// Choice feedback (same text as before)
 // ===========================
 function renderChoiceFeedback(which) {
   const box = document.getElementById("choiceFeedback");
@@ -162,39 +104,63 @@ function renderChoiceFeedback(which) {
 }
 
 // ===========================
-// Unlock restore
+// Resume code encode/decode
 // ===========================
-function restoreUnlocks() {
-  // mission
-  if (getLS("unlock_mission") === "yes") {
-    unlockBlock("missionStart", "lockMsgMission");
-  } else {
-    lockBlock("missionStart", "lockMsgMission", "Locked: Click “Begin Mission” above to continue.");
-  }
+function collectState() {
+  const state = {};
+  SAVE_KEYS.forEach(k => state[k] = getLS(k));
+  return state;
+}
 
-  // branches
-  const choice = getLS("start_choice");
-  if (choice) {
-    renderChoiceFeedback(choice);
-    const cont = document.getElementById("continueAfterChoiceBtn");
-    if (cont) cont.disabled = false;
-  }
+function applyState(state) {
+  SAVE_KEYS.forEach(k => {
+    if (typeof state[k] === "string") setLS(k, state[k]);
+  });
 
-  if (getLS("unlock_noaa") === "yes") {
-    unlockBlock("branchNoaa", "lockMsgNoaa");
-  } else {
-    lockBlock("branchNoaa", "lockMsgNoaa", "Locked: Make a choice above, then click “Continue.”");
-  }
+  rebuildFromStorage();
+  setTopStatus("Resumed!");
+}
 
-  if (getLS("unlock_field") === "yes") {
-    unlockBlock("branchField", "lockMsgField");
-  } else {
-    lockBlock("branchField", "lockMsgField", "Locked: Make a choice above, then click “Continue.”");
-  }
+function encodeResumeCode(stateObj) {
+  const json = JSON.stringify(stateObj);
+  const compressed = LZString.compressToEncodedURIComponent(json);
+  return `R1.${compressed}`;
+}
+
+function decodeResumeCode(code) {
+  const trimmed = (code || "").trim();
+  if (!trimmed.startsWith("R1.")) throw new Error("That doesn't look like a valid Resume Code.");
+  const compressed = trimmed.slice(3);
+  const json = LZString.decompressFromEncodedURIComponent(compressed);
+  if (!json) throw new Error("That code couldn't be read. Check for missing characters.");
+  return JSON.parse(json);
 }
 
 // ===========================
-// Modal
+// QR for lesson+resume
+// ===========================
+function buildResumeUrl(code) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("resume", code);
+  return url.toString();
+}
+
+function renderQrInto(el, text) {
+  if (!el) return;
+  el.innerHTML = "";
+  new QRCode(el, { text, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M });
+}
+
+// ===========================
+// Clipboard
+// ===========================
+async function copyToClipboard(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch { return false; }
+}
+
+// ===========================
+// Modal open/close
 // ===========================
 function openModalWithCurrentState() {
   const overlay = document.getElementById("overlay");
@@ -222,10 +188,121 @@ function openModalWithCurrentState() {
   overlay?.classList.add("show");
   overlay?.setAttribute("aria-hidden", "false");
 }
+
 function closeModal() {
   const overlay = document.getElementById("overlay");
   overlay?.classList.remove("show");
   overlay?.setAttribute("aria-hidden", "true");
+}
+
+// ===========================
+// Rebuild story based on saved progress
+// (this is what makes “only appears after click” still work after resume)
+// ===========================
+function rebuildFromStorage() {
+  const story = document.getElementById("story");
+  if (!story) return;
+
+  // clear and rebuild cleanly
+  story.innerHTML = "";
+
+  // Always add Setting first (it’s the start of the page)
+  addTemplateOnce("tpl-setting", "added_setting");
+
+  // If they had begun, add The Call
+  if (getLS("added_call") === "yes") {
+    addTemplateOnce("tpl-call", "added_call");
+  }
+
+  // If they chose a path, show feedback and add only that branch
+  const choice = getLS("choice_start");
+  if (choice === "noaa") {
+    // ensure call exists
+    if (getLS("added_call") !== "yes") addTemplateOnce("tpl-call", "added_call");
+    // make sure feedback is visible and buttons are disabled
+    renderChoiceFeedback("noaa");
+    disableChoiceButtons();
+    // add NOAA branch
+    addTemplateOnce("tpl-noaa", "added_noaa");
+  }
+  if (choice === "field") {
+    if (getLS("added_call") !== "yes") addTemplateOnce("tpl-call", "added_call");
+    renderChoiceFeedback("field");
+    disableChoiceButtons();
+    addTemplateOnce("tpl-field", "added_field");
+  }
+
+  // wire autosave for any textareas now present
+  wireAutosaveWithin(story);
+
+  // wire story buttons again (because we rebuilt DOM)
+  wireStoryButtons();
+}
+
+function disableChoiceButtons() {
+  const b1 = document.getElementById("choiceNoaaBtn");
+  const b2 = document.getElementById("choiceFieldBtn");
+  if (b1) b1.disabled = true;
+  if (b2) b2.disabled = true;
+}
+
+// ===========================
+// Story button wiring (Begin Mission + choices)
+// ===========================
+function wireStoryButtons() {
+  const beginBtn = document.getElementById("beginMissionBtn");
+  if (beginBtn && !beginBtn.dataset.wired) {
+    beginBtn.dataset.wired = "yes";
+    beginBtn.addEventListener("click", () => {
+      // Add The Call only when clicked
+      const callSection = ensureTemplate("tpl-call", "added_call");
+      if (callSection) {
+        setTopStatus("The Call appeared.");
+        scrollToEl(callSection);
+      } else {
+        // already added; scroll to it
+        scrollToEl(document.getElementById("call"));
+      }
+    });
+  }
+
+  const noaaBtn = document.getElementById("choiceNoaaBtn");
+  if (noaaBtn && !noaaBtn.dataset.wired) {
+    noaaBtn.dataset.wired = "yes";
+    noaaBtn.addEventListener("click", () => {
+      setLS("choice_start", "noaa");
+      renderChoiceFeedback("noaa");
+      disableChoiceButtons();
+
+      // Add NOAA branch only when clicked
+      const noaaSection = ensureTemplate("tpl-noaa", "added_noaa");
+      if (noaaSection) {
+        setTopStatus("NOAA section appeared.");
+        scrollToEl(noaaSection);
+      } else {
+        scrollToEl(document.getElementById("noaa"));
+      }
+    });
+  }
+
+  const fieldBtn = document.getElementById("choiceFieldBtn");
+  if (fieldBtn && !fieldBtn.dataset.wired) {
+    fieldBtn.dataset.wired = "yes";
+    fieldBtn.addEventListener("click", () => {
+      setLS("choice_start", "field");
+      renderChoiceFeedback("field");
+      disableChoiceButtons();
+
+      // Add Field branch only when clicked
+      const fieldSection = ensureTemplate("tpl-field", "added_field");
+      if (fieldSection) {
+        setTopStatus("Field section appeared.");
+        scrollToEl(fieldSection);
+      } else {
+        scrollToEl(document.getElementById("field"));
+      }
+    });
+  }
 }
 
 // ===========================
@@ -237,7 +314,6 @@ function resumeFromTopBox() {
   try {
     const state = decodeResumeCode(code);
     applyState(state);
-    setTopStatus("Resumed!");
   } catch (e) {
     setTopStatus(`Resume failed: ${e.message}`);
   }
@@ -265,10 +341,7 @@ function exportJournalToPDF() {
 
       const lines = doc.splitTextToSize(String(text), maxWidth);
       for (const line of lines) {
-        if (y > pageHeight - margin) {
-          doc.addPage();
-          y = margin;
-        }
+        if (y > pageHeight - margin) { doc.addPage(); y = margin; }
         doc.text(line, margin, y);
         y += fontSize + 6;
       }
@@ -278,139 +351,52 @@ function exportJournalToPDF() {
       if (y > pageHeight - margin) { doc.addPage(); y = margin; }
     }
 
-    const choice = getLS("start_choice") || "(not chosen)";
-    const noaaPrediction = getLS("noaa_prediction") || "(blank)";
-    const noaaMission = getLS("noaa_mission_challenge") || "(blank)";
-    const fieldObs = getLS("field_observations") || "(blank)";
-    const fieldOpt = getLS("optional_challenge") || "(blank)";
-    const fieldMission = getLS("field_mission_challenge") || "(blank)";
+    const choice = getLS("choice_start") || "(not chosen)";
 
     addLine("Eco-Responders: After the Fire — Export My Journal", 16, true);
     addSpacer(6);
     addLine(`Choice: ${choice}`, 11, false);
     addSpacer(14);
 
-    addLine("NOAA Data Path", 13, true);
-    addLine("Prompt: Predict what might happen to the forest next year if rainfall stays low and temperatures stay high. Use data to support your prediction.", 11, false);
-    addLine("Student Response:", 11, true);
-    addLine(noaaPrediction, 11, false);
-    addSpacer(10);
-    addLine("⚡ Mission Challenge (Optional)", 12, true);
-    addLine("Prompt: Add one more prediction OR one question you want to investigate next.", 11, false);
-    addLine("Student Response:", 11, true);
-    addLine(noaaMission, 11, false);
-    addSpacer(16);
+    // NOAA (only include if it appeared or has data)
+    if (getLS("added_noaa") === "yes" || getLS("noaa_prediction") || getLS("noaa_mission_challenge")) {
+      addLine("NOAA Data Path", 13, true);
+      addLine("Prompt: Predict what might happen to the forest next year if rainfall stays low and temperatures stay high. Use data to support your prediction.", 11, false);
+      addLine("Student Response:", 11, true);
+      addLine(getLS("noaa_prediction") || "(blank)", 11, false);
+      addSpacer(10);
+      addLine("⚡ Mission Challenge (Optional)", 12, true);
+      addLine("Prompt: Add one more prediction OR one question you want to investigate next.", 11, false);
+      addLine("Student Response:", 11, true);
+      addLine(getLS("noaa_mission_challenge") || "(blank)", 11, false);
+      addSpacer(16);
+    }
 
-    addLine("Field Observation Path", 13, true);
-    addLine("Prompt: Record two observations showing how the fire affected people or wildlife.", 11, false);
-    addLine("Student Response:", 11, true);
-    addLine(fieldObs, 11, false);
-    addSpacer(12);
+    // Field (only include if it appeared or has data)
+    if (getLS("added_field") === "yes" || getLS("field_observations") || getLS("optional_challenge") || getLS("field_mission_challenge")) {
+      addLine("Field Observation Path", 13, true);
+      addLine("Prompt: Record two observations showing how the fire affected people or wildlife.", 11, false);
+      addLine("Student Response:", 11, true);
+      addLine(getLS("field_observations") || "(blank)", 11, false);
+      addSpacer(12);
 
-    addLine("🌱 Mission Challenge (Optional)", 12, true);
-    addLine("Prompt: Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?", 11, false);
-    addLine("Student Response:", 11, true);
-    addLine(fieldOpt, 11, false);
-    addSpacer(10);
+      addLine("🌱 Mission Challenge (Optional)", 12, true);
+      addLine("Prompt: Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?", 11, false);
+      addLine("Student Response:", 11, true);
+      addLine(getLS("optional_challenge") || "(blank)", 11, false);
+      addSpacer(10);
 
-    addLine("⚡ Mission Challenge (Optional)", 12, true);
-    addLine("Prompt: Add one more observation you think matters most, and explain why.", 11, false);
-    addLine("Student Response:", 11, true);
-    addLine(fieldMission, 11, false);
+      addLine("⚡ Mission Challenge (Optional)", 12, true);
+      addLine("Prompt: Add one more observation you think matters most, and explain why.", 11, false);
+      addLine("Student Response:", 11, true);
+      addLine(getLS("field_mission_challenge") || "(blank)", 11, false);
+    }
 
     doc.save("Eco-Responders_Journal.pdf");
     if (exportMsg) exportMsg.textContent = "✅ PDF downloaded (check your downloads folder).";
   } catch (e) {
     if (exportMsg) exportMsg.textContent = "⚠️ PDF export failed. Try Chrome/Edge, or check if downloads are blocked.";
   }
-}
-
-// ===========================
-// Wiring
-// ===========================
-function wireButtons() {
-  // Begin Mission unlocks mission section (does NOT navigate)
-  document.getElementById("beginMissionBtn")?.addEventListener("click", () => {
-    setLS("unlock_mission", "yes");
-    restoreUnlocks();
-    scrollToId("missionStartWrap");
-    setTopStatus("Mission unlocked.");
-  });
-
-  // Choice buttons
-  const contBtn = document.getElementById("continueAfterChoiceBtn");
-
-  document.getElementById("choiceNoaaBtn")?.addEventListener("click", () => {
-    setLS("start_choice", "noaa");
-    renderChoiceFeedback("noaa");
-    if (contBtn) contBtn.disabled = false;
-    setTopStatus("Choice saved.");
-  });
-
-  document.getElementById("choiceFieldBtn")?.addEventListener("click", () => {
-    setLS("start_choice", "field");
-    renderChoiceFeedback("field");
-    if (contBtn) contBtn.disabled = false;
-    setTopStatus("Choice saved.");
-  });
-
-  // Continue unlocks ONLY the chosen branch (still no navigation)
-  contBtn?.addEventListener("click", () => {
-    const choice = getLS("start_choice");
-    if (choice === "noaa") {
-      setLS("unlock_noaa", "yes");
-      setLS("unlock_field", ""); // keep other locked
-      restoreUnlocks();
-      scrollToId("noaaWrap");
-      setTopStatus("NOAA path unlocked.");
-    } else if (choice === "field") {
-      setLS("unlock_field", "yes");
-      setLS("unlock_noaa", "");
-      restoreUnlocks();
-      scrollToId("fieldWrap");
-      setTopStatus("Field path unlocked.");
-    } else {
-      setTopStatus("Pick a choice first.");
-    }
-  });
-
-  // Pause modal
-  document.getElementById("pauseResumeBtn")?.addEventListener("click", openModalWithCurrentState);
-  document.getElementById("closeModalBtn")?.addEventListener("click", closeModal);
-  document.getElementById("overlay")?.addEventListener("click", (e) => {
-    if (e.target && e.target.id === "overlay") closeModal();
-  });
-
-  // Copy
-  document.getElementById("copyCodeBtn")?.addEventListener("click", async () => {
-    const code = document.getElementById("resumeCodeBox")?.textContent || "";
-    const ok = await copyToClipboard(code);
-    setModalStatus(ok ? "✅ Copied!" : "⚠️ Copy blocked—select the code and copy.");
-  });
-
-  // Reset
-  document.getElementById("resetBtn")?.addEventListener("click", () => {
-    const ok = confirm("Reset clears saved work on this device. Continue?");
-    if (!ok) return;
-    SAVE_KEYS.forEach(delLS);
-
-    const url = new URL(window.location.href);
-    url.searchParams.delete("resume");
-    window.history.replaceState({}, "", url.toString());
-
-    location.reload();
-  });
-
-  // Top resume box
-  document.getElementById("resumeTopBtn")?.addEventListener("click", resumeFromTopBox);
-  document.getElementById("clearTopBtn")?.addEventListener("click", () => {
-    const input = document.getElementById("resumeInputTop");
-    if (input) input.value = "";
-    setTopStatus("Cleared.");
-  });
-
-  // Export PDF
-  document.getElementById("exportPdfBtn")?.addEventListener("click", exportJournalToPDF);
 }
 
 // ===========================
@@ -424,9 +410,12 @@ function maybeResumeFromUrl() {
   try {
     const state = decodeResumeCode(code);
     applyState(state);
-    setTopStatus("Resumed from QR!");
+
+    // remove param
     url.searchParams.delete("resume");
     window.history.replaceState({}, "", url.toString());
+
+    setTopStatus("Resumed from QR!");
     return true;
   } catch (e) {
     setTopStatus(`QR resume failed: ${e.message}`);
@@ -435,13 +424,55 @@ function maybeResumeFromUrl() {
 }
 
 // ===========================
+// Global wiring (pause panel + export)
+// ===========================
+function wireGlobalButtons() {
+  document.getElementById("pauseResumeBtn")?.addEventListener("click", openModalWithCurrentState);
+  document.getElementById("closeModalBtn")?.addEventListener("click", closeModal);
+  document.getElementById("overlay")?.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "overlay") closeModal();
+  });
+
+  document.getElementById("copyCodeBtn")?.addEventListener("click", async () => {
+    const code = document.getElementById("resumeCodeBox")?.textContent || "";
+    const ok = await copyToClipboard(code);
+    setModalStatus(ok ? "✅ Copied!" : "⚠️ Copy blocked—select the code and copy.");
+  });
+
+  document.getElementById("resetBtn")?.addEventListener("click", () => {
+    const ok = confirm("Reset clears saved work on this device. Continue?");
+    if (!ok) return;
+
+    SAVE_KEYS.forEach(delLS);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("resume");
+    window.history.replaceState({}, "", url.toString());
+
+    location.reload();
+  });
+
+  document.getElementById("resumeTopBtn")?.addEventListener("click", resumeFromTopBox);
+  document.getElementById("clearTopBtn")?.addEventListener("click", () => {
+    const input = document.getElementById("resumeInputTop");
+    if (input) input.value = "";
+    setTopStatus("Cleared.");
+  });
+
+  document.getElementById("exportPdfBtn")?.addEventListener("click", exportJournalToPDF);
+}
+
+// ===========================
 // Boot
 // ===========================
-wireAutosave();
-wireButtons();
+wireGlobalButtons();
 
+// If the lesson has never been built on this device, start with Setting only
+if (getLS("added_setting") !== "yes") setLS("added_setting", ""); // just explicit
+
+// Resume from QR if present, otherwise rebuild from localStorage
 const didResume = maybeResumeFromUrl();
-if (!didResume) restoreUnlocks();
+if (!didResume) rebuildFromStorage();
 
 setTopStatus("Ready.");
 setModalStatus("");
