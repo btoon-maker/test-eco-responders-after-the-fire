@@ -1,16 +1,11 @@
 /* Eco-Responders Single-Page Lesson Builder
-   Updates requested:
-   1) Only Pause button + paste box visible; code+QR appear in centered modal on button press.
-   2) The Call text column stretches to match image column height (CSS change).
-   3) Dropdowns show arrows (CSS change).
-   4) Choices can be changed; selecting again shows feedback; Continue reveals that path (can reveal both).
-   5) "Hello Eco-Responders" -> "Situation Briefing" (section title only; wording otherwise unchanged).
-   6) Each section has slightly different gradient to distinguish sections.
-   7) Page background distinct from section cards (CSS change).
-   8) Export PDF includes whole page text + choices + responses (all revealed sections).
+   Changes in this revision ONLY:
+   - Make a Choice: only the chosen branch section appears; switching choice removes the other branch section(s)
+   - Dropdown arrows are handled in CSS (index.html)
+   - Export PDF: ONLY selected choices + journal prompts + student text responses (no narrative page text)
 */
 
-const STORAGE_PREFIX = "eco_v2_"; // versioned storage prefix
+const STORAGE_PREFIX = "eco_v2_";
 const STATE_KEY = `${STORAGE_PREFIX}state`;
 
 const lessonEl = document.getElementById("lesson");
@@ -35,7 +30,7 @@ const SCRIPT = {
   sections: [
     {
       id: "hello",
-      title: "Situation Briefing", // (5)
+      title: "Situation Briefing",
       blocks: [
         {
           type: "text+image",
@@ -252,16 +247,15 @@ function defaultState(){
   return {
     v: 2,
     revealed: ["hello"],
-    choices: {},          // {choiceKey: currentSelectedLabel}
-    choiceHistory: {},    // {choiceKey: [labels...]}  (4)
-    journals: {},         // {saveKey: response}
-    pendingContinues: {}  // {choiceKey: {feedbackText, continueReveal}}
+    choices: {},           // {choiceKey: currentSelectedLabel}
+    journals: {},          // {saveKey: response}
+    pendingContinues: {}   // {choiceKey: {feedbackText, continueReveal}}
   };
 }
 
 let state = loadStateFromLocal() || defaultState();
 
-// If URL includes ?resume=..., try to load it immediately (across-device)
+// If URL includes ?resume=..., try to load it immediately
 (function loadFromURLParam(){
   const url = new URL(window.location.href);
   const code = url.searchParams.get("resume");
@@ -270,12 +264,29 @@ let state = loadStateFromLocal() || defaultState();
     if(decoded){
       state = sanitizeState(decoded);
       saveStateToLocal();
-      // clean URL without reloading
       url.searchParams.delete("resume");
       window.history.replaceState({}, "", url.toString());
     }
   }
 })();
+
+// -------------------- HELPERS: locate parent section for a choiceKey --------------------
+function findChoiceParentSectionId(choiceKey){
+  for(const sec of SCRIPT.sections){
+    for(const b of sec.blocks){
+      if(b.type === "choice" && b.choiceKey === choiceKey){
+        return sec.id;
+      }
+    }
+  }
+  return null;
+}
+
+function pruneRevealedToSection(sectionIdInclusive){
+  const idx = state.revealed.indexOf(sectionIdInclusive);
+  if(idx === -1) return;
+  state.revealed = state.revealed.slice(0, idx + 1);
+}
 
 // -------------------- RENDER --------------------
 function renderAll(){
@@ -289,7 +300,7 @@ function renderAll(){
   imagesNoteEl.textContent =
     "Images are currently placeholders until you upload them to ./images/ with the exact filenames shown in the script.";
 
-  updateResumeArtifacts(); // keep resume code/QR ready for modal
+  updateResumeArtifacts();
 }
 
 function renderSection(sec, idx){
@@ -299,7 +310,7 @@ function renderSection(sec, idx){
   const card = document.createElement("div");
   card.className = "card";
 
-  // (6) subtle per-section gradient so sections don’t blend
+  // subtle per-section tint (kept as-is)
   const tintA = `hsla(${(idx*35)%360}, 55%, 55%, 0.12)`;
   const tintB = `hsla(${(idx*35 + 18)%360}, 55%, 45%, 0.06)`;
   card.style.background = `linear-gradient(180deg, rgba(16,38,36,0.92), rgba(16,38,36,0.78)),
@@ -356,7 +367,7 @@ function renderBlock(b){
   if(b.type === "imageCenter"){
     const container = document.createElement("div");
     container.className = "center-media";
-    container.appendChild(imageBlock(b.image.filename, true));
+    container.appendChild(imageBlock(b.image.filename));
     return container;
   }
 
@@ -442,7 +453,7 @@ function imageBlock(filename){
   return wrap;
 }
 
-// -------------------- CHOICES (4) allow changing choice; feedback first; Continue required --------------------
+// -------------------- CHOICES: ONLY the selected branch can appear --------------------
 function renderChoice(choiceBlock){
   const container = document.createElement("div");
   container.className = "choice-block";
@@ -467,17 +478,21 @@ function renderChoice(choiceBlock){
       btn.classList.add("primary");
     }
 
-    // (4) do NOT disable other options; allow changing
     btn.addEventListener("click", () => {
-      // set current choice
+      const prev = state.choices[choiceBlock.choiceKey] || null;
+
+      // If switching choices AFTER a branch was shown, remove branch + everything after parent section
+      if(prev && prev !== opt.label){
+        const parentId = findChoiceParentSectionId(choiceBlock.choiceKey);
+        if(parentId){
+          pruneRevealedToSection(parentId);
+        }
+      }
+
+      // Set current choice (always allowed)
       state.choices[choiceBlock.choiceKey] = opt.label;
 
-      // update history
-      if(!state.choiceHistory[choiceBlock.choiceKey]) state.choiceHistory[choiceBlock.choiceKey] = [];
-      const hist = state.choiceHistory[choiceBlock.choiceKey];
-      if(hist[hist.length - 1] !== opt.label) hist.push(opt.label);
-
-      // set pending feedback + continue
+      // Set pending feedback + Continue (does NOT reveal branch until Continue)
       state.pendingContinues[choiceBlock.choiceKey] = {
         feedbackText: opt.feedback,
         continueReveal: opt.continueReveal
@@ -493,7 +508,7 @@ function renderChoice(choiceBlock){
 
   container.appendChild(row);
 
-  // show feedback + Continue if pending
+  // Show feedback + Continue if pending
   const pending = state.pendingContinues[choiceBlock.choiceKey];
   if(pending){
     const fb = document.createElement("div");
@@ -510,6 +525,13 @@ function renderChoice(choiceBlock){
     contBtn.textContent = "Continue";
     contBtn.addEventListener("click", () => {
       const target = pending.continueReveal;
+
+      // Enforce exclusivity again: revealing one branch means only that branch exists after parent
+      const parentId = findChoiceParentSectionId(choiceBlock.choiceKey);
+      if(parentId){
+        pruneRevealedToSection(parentId);
+      }
+
       delete state.pendingContinues[choiceBlock.choiceKey];
       saveStateToLocal();
       revealSection(target, true);
@@ -599,7 +621,6 @@ function sanitizeState(s){
   clean.revealed = Array.isArray(s.revealed) ? s.revealed.filter(Boolean) : clean.revealed;
   if(!clean.revealed.includes("hello")) clean.revealed.unshift("hello");
   clean.choices = (s.choices && typeof s.choices === "object") ? s.choices : {};
-  clean.choiceHistory = (s.choiceHistory && typeof s.choiceHistory === "object") ? s.choiceHistory : {};
   clean.journals = (s.journals && typeof s.journals === "object") ? s.journals : {};
   clean.pendingContinues = (s.pendingContinues && typeof s.pendingContinues === "object") ? s.pendingContinues : {};
   return clean;
@@ -655,7 +676,6 @@ function decodeStateFromCode(code){
   }
 }
 
-// Build (but do not display until modal opens) the code + QR artifacts
 function updateResumeArtifacts(){
   const code = encodeStateToCode(state);
   resumeCodeEl.value = code;
@@ -675,11 +695,10 @@ function updateResumeArtifacts(){
   }
 }
 
-// -------------------- MODAL + BUTTONS (1) --------------------
+// -------------------- MODAL + BUTTONS --------------------
 pauseBtn.addEventListener("click", () => {
   modalBackdrop.classList.add("show");
   modalBackdrop.setAttribute("aria-hidden", "false");
-  // refresh artifacts right as modal opens
   updateResumeArtifacts();
 });
 
@@ -725,12 +744,12 @@ resumeBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// -------------------- EXPORT (8) whole page: all revealed text + choices + responses --------------------
+// -------------------- EXPORT: ONLY choices + journal prompts/responses --------------------
 exportBtn.addEventListener("click", async () => {
-  await exportWholePagePDF();
+  await exportChoicesAndResponsesPDF();
 });
 
-async function exportWholePagePDF(){
+async function exportChoicesAndResponsesPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "pt", format: "letter" });
 
@@ -738,121 +757,84 @@ async function exportWholePagePDF(){
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const maxWidth = pageWidth - margin * 2;
-
   let y = margin;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  y = addWrapped(doc, SCRIPT.lessonTitle, margin, y, maxWidth, 22);
+  y = addWrapped(doc, "My Journal", margin, y, maxWidth, 22);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
 
-  // Include choice history + current selected choices
-  y += 8;
-  y = ensureSpace(doc, y, pageHeight, margin, 120);
+  // Selected choices (current)
+  y += 10;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  y = addWrapped(doc, "Selected Choices", margin, y, maxWidth, 16);
+  y = addWrapped(doc, "My Selected Choices", margin, y, maxWidth, 16);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
 
-  const choiceKeys = Object.keys(state.choiceHistory || {});
-  if(choiceKeys.length === 0){
+  const choiceEntries = Object.entries(state.choices || {});
+  if(choiceEntries.length === 0){
     y = addWrapped(doc, "• (No choices selected yet)", margin, y, maxWidth, 14);
   }else{
-    for(const k of choiceKeys){
-      const hist = state.choiceHistory[k] || [];
-      const current = state.choices[k] || "";
-      const line = `• ${k}: ${current}${hist.length ? ` (History: ${hist.join(" → ")})` : ""}`;
-      y = ensureSpace(doc, y, pageHeight, margin, 60);
-      y = addWrapped(doc, line, margin, y, maxWidth, 14);
+    for(const [, label] of choiceEntries){
+      y = ensureSpace(doc, y, pageHeight, margin, 50);
+      y = addWrapped(doc, `• ${label}`, margin, y, maxWidth, 14);
     }
   }
 
-  // Now export the revealed sections in order, including ALL text content + dropdowns + journal prompts/responses
-  for(const secId of state.revealed){
-    const sec = SCRIPT.sections.find(s => s.id === secId);
-    if(!sec) continue;
+  // Journal prompts & responses for revealed sections ONLY
+  const journalItems = getJournalItemsInOrder();
 
+  if(journalItems.length){
     y += 14;
-    y = ensureSpace(doc, y, pageHeight, margin, 120);
-
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    y = addWrapped(doc, sec.title, margin, y, maxWidth, 18);
-
+    doc.setFontSize(12);
+    y = addWrapped(doc, "My Prompts & Responses", margin, y, maxWidth, 16);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
 
-    for(const b of sec.blocks){
-      // narrative text
-      if(b.type === "text" || b.type === "text+image"){
-        const text = b.text;
-        if(text){
-          y = ensureSpace(doc, y, pageHeight, margin, 90);
-          y = addWrapped(doc, text, margin, y, maxWidth, 14);
-        }
-      }
+    for(const item of journalItems){
+      y = ensureSpace(doc, y, pageHeight, margin, 200);
 
-      // image filenames (as placeholder note)
-      if(b.type === "text+image" && b.image?.filename){
-        y = ensureSpace(doc, y, pageHeight, margin, 40);
-        y = addWrapped(doc, `[Image: ${b.image.filename}]`, margin, y, maxWidth, 14);
-      }
-      if(b.type === "imageCenter" && b.image?.filename){
-        y = ensureSpace(doc, y, pageHeight, margin, 40);
-        y = addWrapped(doc, `[Image: ${b.image.filename}]`, margin, y, maxWidth, 14);
-      }
+      doc.setFont("helvetica", "bold");
+      y = addWrapped(doc, item.promptTitleLine, margin, y, maxWidth, 14);
+      doc.setFont("helvetica", "normal");
+      y = addWrapped(doc, item.promptText, margin, y, maxWidth, 14);
 
-      // dropdown content
-      if(b.type === "dropdown"){
-        y = ensureSpace(doc, y, pageHeight, margin, 110);
-        doc.setFont("helvetica", "bold");
-        y = addWrapped(doc, b.title, margin, y, maxWidth, 14);
-        doc.setFont("helvetica", "normal");
-        y = addWrapped(doc, b.text, margin, y, maxWidth, 14);
-      }
-
-      // choices (include current selection)
-      if(b.type === "choice"){
-        y = ensureSpace(doc, y, pageHeight, margin, 90);
-        doc.setFont("helvetica", "bold");
-        y = addWrapped(doc, b.title, margin, y, maxWidth, 14);
-        doc.setFont("helvetica", "normal");
-        const selected = state.choices[b.choiceKey] || "(No selection)";
-        y = addWrapped(doc, `Selected: ${selected}`, margin, y, maxWidth, 14);
-      }
-
-      // journals: prompt + boxed response (+ mission challenge prompt + boxed response)
-      if(b.type === "journal"){
-        y = ensureSpace(doc, y, pageHeight, margin, 220);
-
-        doc.setFont("helvetica", "bold");
-        y = addWrapped(doc, b.title, margin, y, maxWidth, 14);
-        doc.setFont("helvetica", "normal");
-        y = addWrapped(doc, b.prompt, margin, y, maxWidth, 14);
-
-        y += 6;
-        y = drawResponseBox(doc, y, margin, maxWidth, pageHeight, b.saveKey);
-
-        if(b.missionChallenge){
-          y = ensureSpace(doc, y, pageHeight, margin, 220);
-
-          doc.setFont("helvetica", "bold");
-          y = addWrapped(doc, "Mission Challenges", margin, y, maxWidth, 14);
-          y = addWrapped(doc, b.missionChallenge.title, margin, y, maxWidth, 14);
-          doc.setFont("helvetica", "normal");
-          y = addWrapped(doc, b.missionChallenge.prompt, margin, y, maxWidth, 14);
-
-          y += 6;
-          y = drawResponseBox(doc, y, margin, maxWidth, pageHeight, b.missionChallenge.saveKey);
-        }
-      }
+      y += 6;
+      y = drawResponseBox(doc, y, margin, maxWidth, pageHeight, item.saveKey);
+      y += 8;
     }
   }
 
   doc.save("My_Journal.pdf");
+}
+
+function getJournalItemsInOrder(){
+  const items = [];
+  for(const secId of state.revealed){
+    const sec = SCRIPT.sections.find(s => s.id === secId);
+    if(!sec) continue;
+    for(const b of sec.blocks){
+      if(b.type === "journal"){
+        items.push({
+          promptTitleLine: b.title,
+          promptText: b.prompt,
+          saveKey: b.saveKey
+        });
+        if(b.missionChallenge){
+          items.push({
+            promptTitleLine: b.missionChallenge.title,
+            promptText: b.missionChallenge.prompt,
+            saveKey: b.missionChallenge.saveKey
+          });
+        }
+      }
+    }
+  }
+  return items;
 }
 
 function drawResponseBox(doc, y, margin, maxWidth, pageHeight, saveKey){
