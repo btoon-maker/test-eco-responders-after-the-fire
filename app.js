@@ -19,6 +19,12 @@ const exportBtn = document.getElementById("exportBtn");
 
 let qrInstance = null;
 
+// ---- QR practical scanning limit ----
+// QR capacity varies by camera + error correction.
+// Once you encode a long URL (with a long resume code), QR becomes too dense to scan reliably.
+// This threshold keeps it scannable in typical phones.
+const QR_MAX_URL_LEN = 900;
+
 // -------------------- SCRIPT DATA --------------------
 const SCRIPT = {
   lessonTitle: "Eco-Responders",
@@ -178,7 +184,6 @@ With your data uploaded, you now need to understand the field conditions.`
           saveKey: "noaa_prediction",
           missionChallenge: {
             title: "Make a Prediction ⚡ Mission Challenge (Optional)\n🔊 Listen to directions (optional)",
-            // UPDATE #2: remove "⚡ Mission Challenge (Optional)" from under listen line (prompt block)
             prompt:
 `Predict what might happen to the forest next year if rainfall continues to drop and temperatures stay high. Use data to support your prediction.`,
             saveKey: "noaa_mission_challenge"
@@ -226,7 +231,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
           saveKey: "field_observation_prediction",
           missionChallenge: {
             title: "Time to Research 🌱 Mission Challenge (Optional)\n🔊 Listen to directions (optional)",
-            // UPDATE #1: remove "🌱 Mission Challenge (Optional)" from under listen line (prompt block)
             prompt:
 `Research a local fire-adapted plant. How does it help stabilize soil or promote regrowth?`,
             saveKey: "field_observation_mission_challenge"
@@ -274,7 +278,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
 
     <!-- Loop drop zones -->
     <div class="loop-canvas" aria-label="Feedback loop canvas">
-      <!-- UPDATE #3: Circle layout with curved arrows -->
       <div class="loop-ring" aria-label="Feedback loop ring">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
           <defs>
@@ -283,7 +286,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
             </marker>
           </defs>
 
-          <!-- Curved arrows: 1->2, 2->3, 3->4, 4->1 -->
           <path d="M500,90 C700,90 830,160 880,300" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
           <path d="M880,300 C830,440 700,510 500,510" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
           <path d="M500,510 C300,510 170,440 120,300" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
@@ -799,30 +801,63 @@ function decodeStateFromCode(code){
   }
 }
 
+/**
+ * Create a clean base URL for QR + sharing.
+ * Using origin+pathname avoids accidentally reusing old query params that can break QR scanning.
+ */
+function buildCleanResumeURL(code){
+  const base = new URL(window.location.origin + window.location.pathname);
+  base.searchParams.set("resume", code);
+  return base;
+}
+
 function updateResumeArtifacts(){
   const code = encodeStateToCode(state);
   resumeCodeEl.value = code;
 
-  const resumeURL = new URL(window.location.href);
-  resumeURL.searchParams.set("resume", code);
+  const resumeURL = buildCleanResumeURL(code);
 
   const qrEl = document.getElementById("qrCode");
-  if(qrEl){
-    qrEl.innerHTML = "";
-    qrInstance = new QRCode(qrEl, {
-      text: resumeURL.toString(),
-      width: 170,
-      height: 170,
-      correctLevel: QRCode.CorrectLevel.M
-    });
+  if(!qrEl) return;
+
+  // Clear previous QR / content safely
+  qrEl.innerHTML = "";
+  qrInstance = null;
+
+  // If the URL is too long, QR becomes too dense to scan reliably.
+  // In that case we show a clear message and rely on copy/paste resume code.
+  const urlText = resumeURL.toString();
+  if(urlText.length > QR_MAX_URL_LEN){
+    const msg = document.createElement("div");
+    msg.style.maxWidth = "260px";
+    msg.style.textAlign = "center";
+    msg.style.lineHeight = "1.35";
+    msg.innerHTML =
+      `<div style="font-weight:900; margin-bottom:6px;">QR not available</div>
+       <div style="opacity:0.9;">
+         Your resume data is too large to fit in a scannable QR code.
+         Please use <strong>Copy</strong> and paste the Resume Code on your other device.
+       </div>`;
+    qrEl.appendChild(msg);
+    return;
   }
+
+  // Normal QR generation (scannable)
+  qrInstance = new QRCode(qrEl, {
+    text: urlText,
+    width: 170,
+    height: 170,
+    correctLevel: QRCode.CorrectLevel.M
+  });
 }
 
 // -------------------- MODAL + BUTTONS --------------------
 pauseBtn.addEventListener("click", () => {
   modalBackdrop.classList.add("show");
   modalBackdrop.setAttribute("aria-hidden", "false");
-  updateResumeArtifacts();
+
+  // Generate QR after modal is visible (helps some browsers)
+  setTimeout(updateResumeArtifacts, 0);
 });
 
 closePauseModalBtn.addEventListener("click", closeModal);
@@ -1173,7 +1208,6 @@ function initFeedbackLoopInteractive(){
   saveBtn.addEventListener("click", ()=>{
     const data = collectLoopData();
 
-    // UPDATE #3 mapping: Step1=top, Step2=right, Step3=bottom, Step4=left
     const stepsText =
       `Step 1: ${data.placements.top || ""}\n` +
       `Step 2: ${data.placements.right || ""}\n` +
