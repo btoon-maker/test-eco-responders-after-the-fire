@@ -19,12 +19,6 @@ const exportBtn = document.getElementById("exportBtn");
 
 let qrInstance = null;
 
-// ---- QR practical scanning limit ----
-// QR capacity varies by camera + error correction.
-// Once you encode a long URL (with a long resume code), QR becomes too dense to scan reliably.
-// This threshold keeps it scannable in typical phones.
-const QR_MAX_URL_LEN = 900;
-
 // -------------------- SCRIPT DATA --------------------
 const SCRIPT = {
   lessonTitle: "Eco-Responders",
@@ -426,11 +420,9 @@ function renderSection(sec, idx){
   const card = document.createElement("div");
   card.className = "card";
 
-  const tintA = `hsla(${(idx*35)%360}, 55%, 55%, 0.12)`;
-  const tintB = `hsla(${(idx*35 + 18)%360}, 55%, 45%, 0.06)`;
-  card.style.background = `linear-gradient(180deg, rgba(16,38,36,0.92), rgba(16,38,36,0.78)),
-                           radial-gradient(900px 300px at 20% 10%, ${tintA}, transparent 60%),
-                           radial-gradient(900px 300px at 90% 30%, ${tintB}, transparent 60%)`;
+  // IMPORTANT: keep background consistent across sections (no color shift on scroll)
+  card.style.background =
+    `linear-gradient(180deg, rgba(16,38,36,0.94), rgba(16,38,36,0.82))`;
 
   const head = document.createElement("div");
   head.className = "section-head";
@@ -802,62 +794,63 @@ function decodeStateFromCode(code){
 }
 
 /**
- * Create a clean base URL for QR + sharing.
- * Using origin+pathname avoids accidentally reusing old query params that can break QR scanning.
+ * QR reliability:
+ * - QR codes have strict capacity limits. Resume URLs can get too long.
+ * - We generate a resume URL QR ONLY if it’s short enough.
+ * - If it’s too long, we still generate a QR that opens the lesson (base URL),
+ *   and the student uses the Resume Code (copy/paste) to restore progress.
  */
-function buildCleanResumeURL(code){
-  const base = new URL(window.location.origin + window.location.pathname);
-  base.searchParams.set("resume", code);
-  return base;
-}
-
 function updateResumeArtifacts(){
   const code = encodeStateToCode(state);
   resumeCodeEl.value = code;
 
-  const resumeURL = buildCleanResumeURL(code);
-
   const qrEl = document.getElementById("qrCode");
-  if(!qrEl) return;
+  const qrNoteEl = document.getElementById("qrNote");
 
-  // Clear previous QR / content safely
-  qrEl.innerHTML = "";
-  qrInstance = null;
+  const baseURL = new URL(window.location.href);
+  baseURL.searchParams.delete("resume");
 
-  // If the URL is too long, QR becomes too dense to scan reliably.
-  // In that case we show a clear message and rely on copy/paste resume code.
-  const urlText = resumeURL.toString();
-  if(urlText.length > QR_MAX_URL_LEN){
-    const msg = document.createElement("div");
-    msg.style.maxWidth = "260px";
-    msg.style.textAlign = "center";
-    msg.style.lineHeight = "1.35";
-    msg.innerHTML =
-      `<div style="font-weight:900; margin-bottom:6px;">QR not available</div>
-       <div style="opacity:0.9;">
-         Your resume data is too large to fit in a scannable QR code.
-         Please use <strong>Copy</strong> and paste the Resume Code on your other device.
-       </div>`;
-    qrEl.appendChild(msg);
-    return;
+  const resumeURL = new URL(baseURL.toString());
+  resumeURL.searchParams.set("resume", code);
+
+  // Threshold: keep conservative so QR works across cameras/apps
+  const MAX_QR_TEXT_LEN = 900;
+
+  let qrText = "";
+  let note = "";
+
+  if(resumeURL.toString().length <= MAX_QR_TEXT_LEN){
+    qrText = resumeURL.toString();
+    note = "Scan to open this lesson on another device with your progress restored automatically.";
+  }else{
+    qrText = baseURL.toString();
+    note = "Your Resume Code is too long for a reliable QR link (lots of writing!). Scan to open the lesson, then paste the Resume Code above to restore your work.";
   }
 
-  // Normal QR generation (scannable)
-  qrInstance = new QRCode(qrEl, {
-    text: urlText,
-    width: 170,
-    height: 170,
-    correctLevel: QRCode.CorrectLevel.M
-  });
+  if(qrEl){
+    qrEl.innerHTML = "";
+    try{
+      qrInstance = new QRCode(qrEl, {
+        text: qrText,
+        width: 170,
+        height: 170,
+        correctLevel: QRCode.CorrectLevel.L
+      });
+    }catch(e){
+      // If QR lib fails for any reason, show a helpful fallback note
+      if(qrNoteEl) qrNoteEl.textContent = "QR could not be generated on this device. Please use Copy + paste the Resume Code.";
+      return;
+    }
+  }
+
+  if(qrNoteEl) qrNoteEl.textContent = note;
 }
 
 // -------------------- MODAL + BUTTONS --------------------
 pauseBtn.addEventListener("click", () => {
   modalBackdrop.classList.add("show");
   modalBackdrop.setAttribute("aria-hidden", "false");
-
-  // Generate QR after modal is visible (helps some browsers)
-  setTimeout(updateResumeArtifacts, 0);
+  updateResumeArtifacts();
 });
 
 closePauseModalBtn.addEventListener("click", closeModal);
@@ -1208,6 +1201,7 @@ function initFeedbackLoopInteractive(){
   saveBtn.addEventListener("click", ()=>{
     const data = collectLoopData();
 
+    // Step1=top, Step2=right, Step3=bottom, Step4=left
     const stepsText =
       `Step 1: ${data.placements.top || ""}\n` +
       `Step 2: ${data.placements.right || ""}\n` +
