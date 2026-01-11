@@ -17,8 +17,6 @@ const copyCodeBtn = document.getElementById("copyCodeBtn");
 const saveStatusEl = document.getElementById("saveStatus");
 const exportBtn = document.getElementById("exportBtn");
 
-let qrInstance = null;
-
 // -------------------- SCRIPT DATA --------------------
 const SCRIPT = {
   lessonTitle: "Eco-Responders",
@@ -98,11 +96,7 @@ The agency that helps people and communities prepare for and recover from natura
 ☁ NOAA (National Oceanic and Atmospheric Administration )
 The agency that studies Earth’s weather and climate to help predict and prevent environmental hazards.`
         },
-        {
-          type: "buttonReveal",
-          label: "Begin Mission",
-          reveal: "the_call"
-        }
+        { type: "buttonReveal", label: "Begin Mission", reveal: "the_call" }
       ]
     },
 
@@ -234,8 +228,9 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
       id: "feedback_loop",
       title: "Feedback Loop Model: How One Change Leads to Another",
       blocks: [
-        { type: "customHTML", html: document.querySelector("#feedback-loop-journal") ? "" : `
-<section class="journal-card" id="feedback-loop-journal">
+        {
+          type: "customHTML",
+          html: `<section class="journal-card" id="feedback-loop-journal">
   <h2 class="journal-title">Feedback Loop Model: How One Change Leads to Another</h2>
 
   <div class="loop-example" style="margin-top:10px;">
@@ -244,6 +239,7 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
   </div>
 
   <div class="loop-layout">
+    <!-- Word bank -->
     <aside class="word-bank" aria-label="Word bank">
       <h3><span class="hl-yellow">Word Bank</span></h3>
       <div class="chip-bank" id="chipBank">
@@ -263,19 +259,20 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
       </p>
     </aside>
 
+    <!-- Loop drop zones -->
     <div class="loop-canvas" aria-label="Feedback loop canvas">
       <div class="loop-ring" aria-label="Feedback loop ring">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-              <path d="M0,0 L10,5 L0,10 Z" fill="rgba(233,245,242,0.75)"></path>
+              <path d="M0,0 L10,5 L0,10 Z" fill="rgba(15,23,42,0.50)"></path>
             </marker>
           </defs>
 
-          <path d="M500,90 C700,90 830,160 880,300" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
-          <path d="M880,300 C830,440 700,510 500,510" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
-          <path d="M500,510 C300,510 170,440 120,300" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
-          <path d="M120,300 C170,160 300,90 500,90" fill="none" stroke="rgba(233,245,242,0.65)" stroke-width="3" marker-end="url(#arrowHead)"/>
+          <path d="M500,90 C700,90 830,160 880,300" fill="none" stroke="rgba(15,23,42,0.25)" stroke-width="3" marker-end="url(#arrowHead)"/>
+          <path d="M880,300 C830,440 700,510 500,510" fill="none" stroke="rgba(15,23,42,0.25)" stroke-width="3" marker-end="url(#arrowHead)"/>
+          <path d="M500,510 C300,510 170,440 120,300" fill="none" stroke="rgba(15,23,42,0.25)" stroke-width="3" marker-end="url(#arrowHead)"/>
+          <path d="M120,300 C170,160 300,90 500,90" fill="none" stroke="rgba(15,23,42,0.25)" stroke-width="3" marker-end="url(#arrowHead)"/>
         </svg>
 
         <div class="dropzone dz-top" data-zone="top" tabindex="0" aria-label="Dropzone top">
@@ -299,7 +296,9 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
         </div>
       </div>
 
-      <div class="loop-flow">Step 1 → Step 2 → Step 3 → Step 4 → Step 1</div>
+      <div class="loop-flow">
+        Step 1 → Step 2 → Step 3 → Step 4 → Step 1
+      </div>
 
       <div class="loop-example">
         Example: Over-clearing → erosion → fewer plants → hotter soil → faster next fire
@@ -333,8 +332,8 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
     <button class="btn" id="saveLoopJournal" type="button">Save to Journal</button>
     <span class="save-status" id="loopSaveStatus" aria-live="polite"></span>
   </div>
-</section>
-        ` }
+</section>`
+        }
       ]
     }
   ]
@@ -409,9 +408,7 @@ function renderSection(sec, idx){
 
   const card = document.createElement("div");
   card.className = "card";
-
-  card.style.background =
-    `linear-gradient(180deg, rgba(16,38,36,0.94), rgba(16,38,36,0.82))`;
+  // Background is handled purely by CSS for consistency.
 
   const head = document.createElement("div");
   head.className = "section-head";
@@ -761,11 +758,11 @@ function saveStateToLocalDebounced(){
 
 function showSaving(){
   saveStatusEl.textContent = "Saving…";
-  saveStatusEl.style.borderColor = "rgba(255,207,90,0.45)";
+  saveStatusEl.style.borderColor = "rgba(245,158,11,0.55)";
 }
 function pulseSaved(){
   saveStatusEl.textContent = "Saved";
-  saveStatusEl.style.borderColor = "rgba(69,211,154,0.45)";
+  saveStatusEl.style.borderColor = "rgba(14,165,164,0.55)";
 }
 
 function encodeStateToCode(s){
@@ -775,6 +772,7 @@ function encodeStateToCode(s){
 function decodeStateFromCode(code){
   try{
     const json = LZString.decompressFromEncodedURIComponent(code);
+;
     if(!json) return null;
     return JSON.parse(json);
   }catch(e){
@@ -782,52 +780,10 @@ function decodeStateFromCode(code){
   }
 }
 
-/**
- * ✅ PHONE-PROOF QR STRATEGY (STATIC SITE):
- * - QR codes often fail when they contain long encoded text.
- * - To guarantee scanning, we ONLY encode the base lesson URL (short).
- * - Students use Resume Code (copy/paste) to restore progress.
- * - We make the QR larger and set error correction HIGH.
- */
 function updateResumeArtifacts(){
+  // QR REMOVED: Resume Code only
   const code = encodeStateToCode(state);
   resumeCodeEl.value = code;
-
-  const qrEl = document.getElementById("qrCode");
-  const qrNoteEl = document.getElementById("qrNote");
-
-  const baseURL = new URL(window.location.href);
-  baseURL.searchParams.delete("resume");
-  const qrText = baseURL.toString();
-
-  if(qrEl){
-    qrEl.innerHTML = "";
-
-    // Add a white pad behind the QR so cameras can lock onto edges
-    const pad = document.createElement("div");
-    pad.style.background = "#ffffff";
-    pad.style.padding = "10px";
-    pad.style.borderRadius = "12px";
-    pad.style.display = "inline-block";
-    qrEl.appendChild(pad);
-
-    try{
-      qrInstance = new QRCode(pad, {
-        text: qrText,
-        width: 240,
-        height: 240,
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }catch(e){
-      if(qrNoteEl) qrNoteEl.textContent = "QR could not be generated on this device. Please use Copy + paste the Resume Code.";
-      return;
-    }
-  }
-
-  if(qrNoteEl){
-    qrNoteEl.textContent =
-      "Scan to open the lesson on another device. Then paste the Resume Code above to restore your progress.";
-  }
 }
 
 // -------------------- MODAL + BUTTONS --------------------
