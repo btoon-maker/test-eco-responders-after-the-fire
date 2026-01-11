@@ -164,10 +164,7 @@ This path focuses on direct evidence—what you can see, touch, and observe righ
 “See the trend? Less rain and more heat mean lower fuel moisture,” Jordan mutters. “That’s a dangerous mix. The plants themselves become fuel.”
 With your data uploaded, you now need to understand the field conditions.`
         },
-        {
-          type: "imageCenter",
-          image: { filename: "NOAA_center.png", positionNote: "center under the text" }
-        },
+        { type: "imageCenter", image: { filename: "NOAA_center.png", positionNote: "center under the text" } },
         {
           type: "journal",
           title: "Time to Spot a Pattern\n🔊 Listen to directions (optional)",
@@ -183,7 +180,6 @@ With your data uploaded, you now need to understand the field conditions.`
             saveKey: "noaa_mission_challenge"
           }
         },
-
         { type: "buttonReveal", label: "Continue", reveal: "feedback_loop" }
       ]
     },
@@ -230,7 +226,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
             saveKey: "field_observation_mission_challenge"
           }
         },
-
         { type: "buttonReveal", label: "Continue", reveal: "feedback_loop" }
       ]
     },
@@ -239,9 +234,8 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
       id: "feedback_loop",
       title: "Feedback Loop Model: How One Change Leads to Another",
       blocks: [
-        {
-          type: "customHTML",
-          html: `<section class="journal-card" id="feedback-loop-journal">
+        { type: "customHTML", html: document.querySelector("#feedback-loop-journal") ? "" : `
+<section class="journal-card" id="feedback-loop-journal">
   <h2 class="journal-title">Feedback Loop Model: How One Change Leads to Another</h2>
 
   <div class="loop-example" style="margin-top:10px;">
@@ -250,7 +244,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
   </div>
 
   <div class="loop-layout">
-    <!-- Word bank -->
     <aside class="word-bank" aria-label="Word bank">
       <h3><span class="hl-yellow">Word Bank</span></h3>
       <div class="chip-bank" id="chipBank">
@@ -270,7 +263,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
       </p>
     </aside>
 
-    <!-- Loop drop zones -->
     <div class="loop-canvas" aria-label="Feedback loop canvas">
       <div class="loop-ring" aria-label="Feedback loop ring">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
@@ -307,9 +299,7 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
         </div>
       </div>
 
-      <div class="loop-flow">
-        Step 1 → Step 2 → Step 3 → Step 4 → Step 1
-      </div>
+      <div class="loop-flow">Step 1 → Step 2 → Step 3 → Step 4 → Step 1</div>
 
       <div class="loop-example">
         Example: Over-clearing → erosion → fewer plants → hotter soil → faster next fire
@@ -343,8 +333,8 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
     <button class="btn" id="saveLoopJournal" type="button">Save to Journal</button>
     <span class="save-status" id="loopSaveStatus" aria-live="polite"></span>
   </div>
-</section>`
-        }
+</section>
+        ` }
       ]
     }
   ]
@@ -415,12 +405,11 @@ function renderAll(){
 function renderSection(sec, idx){
   const wrap = document.createElement("section");
   wrap.className = "section";
-  wrap.dataset.sectionId = sec.id; // used for scrolling
+  wrap.dataset.sectionId = sec.id;
 
   const card = document.createElement("div");
   card.className = "card";
 
-  // IMPORTANT: keep background consistent across sections (no color shift on scroll)
   card.style.background =
     `linear-gradient(180deg, rgba(16,38,36,0.94), rgba(16,38,36,0.82))`;
 
@@ -794,11 +783,11 @@ function decodeStateFromCode(code){
 }
 
 /**
- * QR reliability:
- * - QR codes have strict capacity limits. Resume URLs can get too long.
- * - We generate a resume URL QR ONLY if it’s short enough.
- * - If it’s too long, we still generate a QR that opens the lesson (base URL),
- *   and the student uses the Resume Code (copy/paste) to restore progress.
+ * ✅ PHONE-PROOF QR STRATEGY (STATIC SITE):
+ * - QR codes often fail when they contain long encoded text.
+ * - To guarantee scanning, we ONLY encode the base lesson URL (short).
+ * - Students use Resume Code (copy/paste) to restore progress.
+ * - We make the QR larger and set error correction HIGH.
  */
 function updateResumeArtifacts(){
   const code = encodeStateToCode(state);
@@ -809,41 +798,36 @@ function updateResumeArtifacts(){
 
   const baseURL = new URL(window.location.href);
   baseURL.searchParams.delete("resume");
-
-  const resumeURL = new URL(baseURL.toString());
-  resumeURL.searchParams.set("resume", code);
-
-  // Threshold: keep conservative so QR works across cameras/apps
-  const MAX_QR_TEXT_LEN = 900;
-
-  let qrText = "";
-  let note = "";
-
-  if(resumeURL.toString().length <= MAX_QR_TEXT_LEN){
-    qrText = resumeURL.toString();
-    note = "Scan to open this lesson on another device with your progress restored automatically.";
-  }else{
-    qrText = baseURL.toString();
-    note = "Your Resume Code is too long for a reliable QR link (lots of writing!). Scan to open the lesson, then paste the Resume Code above to restore your work.";
-  }
+  const qrText = baseURL.toString();
 
   if(qrEl){
     qrEl.innerHTML = "";
+
+    // Add a white pad behind the QR so cameras can lock onto edges
+    const pad = document.createElement("div");
+    pad.style.background = "#ffffff";
+    pad.style.padding = "10px";
+    pad.style.borderRadius = "12px";
+    pad.style.display = "inline-block";
+    qrEl.appendChild(pad);
+
     try{
-      qrInstance = new QRCode(qrEl, {
+      qrInstance = new QRCode(pad, {
         text: qrText,
-        width: 170,
-        height: 170,
-        correctLevel: QRCode.CorrectLevel.L
+        width: 240,
+        height: 240,
+        correctLevel: QRCode.CorrectLevel.H
       });
     }catch(e){
-      // If QR lib fails for any reason, show a helpful fallback note
       if(qrNoteEl) qrNoteEl.textContent = "QR could not be generated on this device. Please use Copy + paste the Resume Code.";
       return;
     }
   }
 
-  if(qrNoteEl) qrNoteEl.textContent = note;
+  if(qrNoteEl){
+    qrNoteEl.textContent =
+      "Scan to open the lesson on another device. Then paste the Resume Code above to restore your progress.";
+  }
 }
 
 // -------------------- MODAL + BUTTONS --------------------
@@ -1201,7 +1185,6 @@ function initFeedbackLoopInteractive(){
   saveBtn.addEventListener("click", ()=>{
     const data = collectLoopData();
 
-    // Step1=top, Step2=right, Step3=bottom, Step4=left
     const stepsText =
       `Step 1: ${data.placements.top || ""}\n` +
       `Step 2: ${data.placements.right || ""}\n` +
