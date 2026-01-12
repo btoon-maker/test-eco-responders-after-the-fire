@@ -6,9 +6,8 @@
   <title>Eco-Responders Lesson</title>
   <style>
     :root{
-      /* ===== Forest background ===== */
-      --page:#1f3b2c;        /* forest green */
-      --page2:#1a3226;       /* deeper forest */
+      --page:#1f3b2c;
+      --page2:#1a3226;
       --paper:#ffffff;
       --paper2:#f8fafc;
       --ink:#0f172a;
@@ -30,8 +29,6 @@
       margin:0;
       font-family: var(--font-body);
       color: var(--ink);
-
-      /* Forest green background with subtle texture */
       background:
         radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,0.06), transparent 55%),
         radial-gradient(900px 700px at 80% 35%, rgba(255,255,255,0.05), transparent 60%),
@@ -56,18 +53,16 @@
       gap:12px;
       align-items:center;
       justify-content:space-between;
-      padding-right: 260px; /* makes room for fixed widget on right */
+      padding-right: 260px;
       box-sizing: border-box;
     }
 
     .title{
       font-size: 20px;
       font-weight: 900;
-      letter-spacing: 0.2px;
       margin:0;
       color: var(--ink);
     }
-
     .subtitle{
       margin: 4px 0 0 0;
       color: var(--muted);
@@ -81,6 +76,22 @@
       box-sizing: border-box;
     }
 
+    /* Shows only if JS fails */
+    .app-error{
+      display:none;
+      margin: 14px 0;
+      border: 1px solid rgba(220,38,38,0.35);
+      background: rgba(220,38,38,0.10);
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 12px 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      box-shadow: 0 10px 24px rgba(15,23,42,0.14);
+    }
+    .app-error.show{ display:block; }
+    .app-error strong{ color: rgba(220,38,38,0.95); }
+
     .card{
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -88,10 +99,7 @@
       overflow:hidden;
       background: var(--paper);
     }
-
-    .section{
-      margin: 16px 0;
-    }
+    .section{ margin: 16px 0; }
 
     .section-head{
       padding: 14px 16px;
@@ -102,17 +110,13 @@
       justify-content:space-between;
       gap:12px;
     }
-
     .section-title{
       font-size: 18px;
       font-weight: 900;
       margin:0;
       color: var(--ink);
     }
-
-    .section-body{
-      padding: 14px 16px 16px 16px;
-    }
+    .section-body{ padding: 14px 16px 16px 16px; }
 
     .content{
       color: var(--ink);
@@ -126,21 +130,11 @@
       gap:16px;
       align-items: stretch;
     }
-    .two-col .col-text{
-      flex: 1 1 auto;
-      display:flex;
-    }
-    .two-col .col-text > .content{
-      flex: 1 1 auto;
-      width: 100%;
-    }
-    .two-col .col-media{flex: 0 0 280px;}
+    .two-col .col-text{ flex: 1 1 auto; display:flex; }
+    .two-col .col-text > .content{ flex: 1 1 auto; width: 100%; }
+    .two-col .col-media{ flex: 0 0 280px; }
 
-    .center-media{
-      margin-top: 12px;
-      display:flex;
-      justify-content:center;
-    }
+    .center-media{ margin-top: 12px; display:flex; justify-content:center; }
     .center-media img{
       max-width: 560px;
       width: 100%;
@@ -148,11 +142,9 @@
       border: 1px solid var(--border);
       background: #fff;
     }
-    .center-media .img-placeholder{
-      max-width: 560px;
-    }
+    .center-media .img-placeholder{ max-width: 560px; }
 
-    .img-col img, .two-col .col-media img{
+    .two-col .col-media img{
       width: 100%;
       height: auto;
       border-radius: 12px;
@@ -221,7 +213,6 @@
       border: 1px solid rgba(14,165,164,0.25);
       background: rgba(14,165,164,0.06);
     }
-
     .choice-title{
       font-weight: 900;
       margin: 0 0 8px 0;
@@ -351,12 +342,7 @@
       font-size: 12px;
     }
     .resume-widget .rw-body{ padding: 10px; }
-    .rw-row{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
+    .rw-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .rw-row input{
       flex: 1 1 auto;
       min-width: 120px;
@@ -403,11 +389,7 @@
       gap:10px;
       background: var(--paper2);
     }
-    .modal-head strong{
-      font-size: 14px;
-      letter-spacing: 0.2px;
-      color: var(--ink);
-    }
+    .modal-head strong{ font-size: 14px; color: var(--ink); }
     .modal-body{ padding: 14px; color: var(--ink); }
     .small-label{ color: var(--muted); margin: 10px 0 6px 0; font-weight: 900; }
     .codebox{ display:flex; gap:6px; align-items:center; }
@@ -440,12 +422,9 @@
       bottom: 0;
       z-index: 900;
       padding: 10px 12px;
-
-      /* forest-tinted bar */
       background: rgba(31,59,44,0.85);
       backdrop-filter: blur(8px);
       border-top: 1px solid rgba(255,255,255,0.14);
-
       display:flex;
       justify-content:center;
     }
@@ -465,7 +444,7 @@
       line-height: 1.35;
     }
 
-    /* ===== Feedback Loop Interactive ===== */
+    /* Feedback Loop (same as before) */
     .journal-card{
       border:1px solid rgba(15,23,42,0.14);
       border-radius:16px;
@@ -473,7 +452,6 @@
       background: rgba(15,23,42,0.02);
       margin: 18px 0;
     }
-
     .journal-title{ margin:0 0 6px 0; font-size: 1.35rem; color: var(--ink); }
     .hl-yellow{ color: var(--accent2); font-weight: 900; }
 
@@ -496,11 +474,8 @@
       padding:14px;
       background: #fff;
     }
-
     .word-bank h3{ margin:0 0 10px 0; font-size: 1.05rem; color: var(--accent2); }
-
     .chip-bank{ display:flex; flex-wrap:wrap; gap:10px; }
-
     .chip{
       border:1px solid rgba(15,23,42,0.16);
       background: rgba(15,23,42,0.02);
@@ -513,9 +488,7 @@
       font-size:.92rem;
     }
     .chip:active{ cursor:grabbing; }
-
     .bank-actions{ margin-top:12px; display:flex; gap:10px; }
-
     .hint{ margin:10px 0 0 0; color: var(--muted); font-size:.9rem; }
 
     .loop-canvas{
@@ -529,9 +502,8 @@
       box-sizing: border-box;
     }
 
-    /* ==== KEY FIX: dropzone sizing to prevent overlap ==== */
     .dropzone{
-      width: 220px;                 /* narrower than before */
+      width: 220px;
       max-width: 220px;
       border:1px dashed rgba(15,23,42,0.25);
       border-radius:14px;
@@ -539,7 +511,6 @@
       background: rgba(15,23,42,0.02);
       box-sizing: border-box;
     }
-
     .dz-label{
       display:block;
       font-size:.85rem;
@@ -547,7 +518,6 @@
       margin-bottom:6px;
       font-weight: 800;
     }
-
     .dz-value{
       min-height: 38px;
       display:flex;
@@ -558,13 +528,11 @@
       content: attr(data-empty);
       color: rgba(71,85,105,0.8);
     }
-
     .dropzone.dragover{
       border-color: rgba(14,165,164,0.55);
       background: rgba(14,165,164,0.08);
     }
 
-    /* Chips inside dropzones can wrap (prevents pill overflow) */
     .placed-chip{
       display:inline-flex;
       align-items:center;
@@ -576,13 +544,11 @@
       cursor:grab;
       font-weight:900;
       color: var(--ink);
-
       max-width: 100%;
       flex-wrap: wrap;
       white-space: normal;
       line-height: 1.2;
     }
-
     .remove-x{
       color: var(--muted);
       font-weight:900;
@@ -609,17 +575,15 @@
       color: var(--ink);
     }
 
-    /* ==== KEY FIX: bigger ring + more spacing ==== */
     .loop-ring{
       position: relative;
       width: 100%;
-      height: 400px;          /* taller */
+      height: 400px;
       min-height: 400px;
       margin-top: 6px;
-      padding: 12px;          /* gives breathing room */
+      padding: 12px;
       box-sizing: border-box;
     }
-
     .loop-ring svg{
       position:absolute;
       inset: 0;
@@ -629,7 +593,6 @@
       overflow: visible;
     }
 
-    /* ==== KEY FIX: push left/right further outward ==== */
     .dz-top{
       position:absolute;
       left:50%;
@@ -638,7 +601,7 @@
     }
     .dz-right{
       position:absolute;
-      right: 22px;            /* farther right */
+      right: 22px;
       top:50%;
       transform: translateY(-50%);
     }
@@ -650,17 +613,13 @@
     }
     .dz-left{
       position:absolute;
-      left: 22px;             /* farther left */
+      left: 22px;
       top:50%;
       transform: translateY(-50%);
     }
 
     @media (max-width: 980px){
-      .loop-ring{
-        height: 520px;
-        min-height: 520px;
-        padding: 0;
-      }
+      .loop-ring{ height: 520px; min-height: 520px; padding: 0; }
       .dropzone{ width: 100%; max-width: 100%; }
       .dz-top, .dz-right, .dz-bottom, .dz-left{
         position: static;
@@ -686,9 +645,7 @@
       padding:12px;
       background: rgba(15,23,42,0.02);
     }
-
     .reflection-card h3{ margin:0 0 8px 0; font-size:1rem; color: var(--ink); }
-
     .reflection-card textarea{
       width:100%;
       border-radius:12px;
@@ -711,7 +668,6 @@
       gap:12px;
       margin-top:12px;
     }
-
     .save-status{ color: var(--muted); font-size:.92rem; }
   </style>
 </head>
@@ -738,7 +694,7 @@
         <button class="btn warning" id="resumeBtn" type="button">Resume</button>
       </div>
 
-      <div class="rw-note">
+      <div class="rw-note" id="rwNote">
         Your progress saves automatically on this device. To continue on another device, use “Pause &amp; Resume Later” to copy the Resume Code.
       </div>
     </div>
@@ -757,7 +713,7 @@
           <button class="btn" id="copyCodeBtn" type="button">Copy</button>
         </div>
 
-        <div class="helper">
+        <div class="helper" id="resumeHelper">
           <strong>How it works:</strong><br/>
           • Your work is saved automatically on <em>this</em> device/browser.<br/>
           • To continue on another device, copy the Resume Code above and paste it into the Resume box on the other device.
@@ -770,6 +726,7 @@
   </div>
 
   <main>
+    <div id="appError" class="app-error" role="alert"></div>
     <div id="lesson"></div>
     <div class="note" id="imagesNote"></div>
   </main>
@@ -780,8 +737,11 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="./app.js"></script>
+  <!-- Load libraries BEFORE app.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <!-- App LAST (also defer) -->
+  <script defer src="./app.js"></script>
 </body>
 </html>
