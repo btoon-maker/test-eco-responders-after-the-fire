@@ -6,19 +6,19 @@
   <title>Eco-Responders Lesson</title>
   <style>
     :root{
-      /* Paper theme */
-      --page:#f3f4f6;        /* light page background */
-      --paper:#ffffff;       /* card background */
-      --paper2:#f8fafc;      /* subtle header panels */
-      --ink:#0f172a;         /* main text */
-      --muted:#475569;       /* secondary text */
+      /* ===== Forest background ===== */
+      --page:#1f3b2c;        /* forest green */
+      --page2:#1a3226;       /* deeper forest */
+      --paper:#ffffff;
+      --paper2:#f8fafc;
+      --ink:#0f172a;
+      --muted:#475569;
       --border:rgba(15,23,42,0.14);
-      --shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
       --radius: 14px;
 
-      /* Accents */
-      --accent:#0ea5a4;      /* teal */
-      --accent2:#b45309;     /* amber/brown */
+      --accent:#0ea5a4;
+      --accent2:#b45309;
       --danger:#dc2626;
       --warn:#f59e0b;
 
@@ -29,8 +29,14 @@
     body{
       margin:0;
       font-family: var(--font-body);
-      background: var(--page);
       color: var(--ink);
+
+      /* Forest green background with subtle texture */
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,0.06), transparent 55%),
+        radial-gradient(900px 700px at 80% 35%, rgba(255,255,255,0.05), transparent 60%),
+        linear-gradient(180deg, var(--page), var(--page2));
+      background-attachment: fixed;
     }
 
     header{
@@ -172,7 +178,6 @@
       white-space: pre-wrap;
     }
 
-    /* Dropdowns */
     details.dropdown{
       margin-top: 14px;
       border: 1px solid var(--border);
@@ -200,9 +205,7 @@
       transform: translateY(-1px);
       transition: transform 0.15s ease;
     }
-    details.dropdown[open] summary::after{
-      content: "▾";
-    }
+    details.dropdown[open] summary::after{ content: "▾"; }
     .dropdown-body{
       padding: 0 14px 14px 14px;
       color: var(--ink);
@@ -264,10 +267,7 @@
       background: rgba(220,38,38,0.10);
       border-color: rgba(220,38,38,0.45);
     }
-    button.btn[disabled]{
-      opacity:0.6;
-      cursor:not-allowed;
-    }
+    button.btn[disabled]{ opacity:0.6; cursor:not-allowed; }
 
     .feedback{
       margin-top: 12px;
@@ -350,9 +350,7 @@
       overflow:hidden;
       font-size: 12px;
     }
-    .resume-widget .rw-body{
-      padding: 10px;
-    }
+    .resume-widget .rw-body{ padding: 10px; }
     .rw-row{
       display:flex;
       gap:8px;
@@ -387,9 +385,7 @@
       justify-content:center;
       padding: 18px;
     }
-    .modal-backdrop.show{
-      display:flex;
-    }
+    .modal-backdrop.show{ display:flex; }
     .modal{
       width: min(520px, 100%);
       background: #fff;
@@ -412,20 +408,9 @@
       letter-spacing: 0.2px;
       color: var(--ink);
     }
-    .modal-body{
-      padding: 14px;
-      color: var(--ink);
-    }
-    .small-label{
-      color: var(--muted);
-      margin: 10px 0 6px 0;
-      font-weight: 900;
-    }
-    .codebox{
-      display:flex;
-      gap:6px;
-      align-items:center;
-    }
+    .modal-body{ padding: 14px; color: var(--ink); }
+    .small-label{ color: var(--muted); margin: 10px 0 6px 0; font-weight: 900; }
+    .codebox{ display:flex; gap:6px; align-items:center; }
     input.code{
       width: 100%;
       border-radius: 10px;
@@ -455,9 +440,12 @@
       bottom: 0;
       z-index: 900;
       padding: 10px 12px;
-      background: rgba(243,244,246,0.92);
+
+      /* forest-tinted bar */
+      background: rgba(31,59,44,0.85);
       backdrop-filter: blur(8px);
-      border-top: 1px solid var(--border);
+      border-top: 1px solid rgba(255,255,255,0.14);
+
       display:flex;
       justify-content:center;
     }
@@ -471,13 +459,13 @@
     }
 
     .note{
-      color: var(--muted);
+      color: rgba(255,255,255,0.82);
       font-size: 12px;
       margin-top: 10px;
       line-height: 1.35;
     }
 
-    /* ===== Feedback Loop Interactive (paper theme) ===== */
+    /* ===== Feedback Loop Interactive ===== */
     .journal-card{
       border:1px solid rgba(15,23,42,0.14);
       border-radius:16px;
@@ -487,10 +475,7 @@
     }
 
     .journal-title{ margin:0 0 6px 0; font-size: 1.35rem; color: var(--ink); }
-    .hl-yellow{
-      color: var(--accent2);
-      font-weight: 900;
-    }
+    .hl-yellow{ color: var(--accent2); font-weight: 900; }
 
     .loop-layout{
       display:grid;
@@ -514,11 +499,7 @@
 
     .word-bank h3{ margin:0 0 10px 0; font-size: 1.05rem; color: var(--accent2); }
 
-    .chip-bank{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
+    .chip-bank{ display:flex; flex-wrap:wrap; gap:10px; }
 
     .chip{
       border:1px solid rgba(15,23,42,0.16);
@@ -531,7 +512,6 @@
       font-weight:700;
       font-size:.92rem;
     }
-
     .chip:active{ cursor:grabbing; }
 
     .bank-actions{ margin-top:12px; display:flex; gap:10px; }
@@ -543,14 +523,16 @@
       border-radius:14px;
       padding:14px;
       background: #fff;
-      min-height: 420px;
+      min-height: 500px;
       overflow: visible;
       position: relative;
       box-sizing: border-box;
     }
 
+    /* ==== KEY FIX: dropzone sizing to prevent overlap ==== */
     .dropzone{
-      width: 260px;
+      width: 220px;                 /* narrower than before */
+      max-width: 220px;
       border:1px dashed rgba(15,23,42,0.25);
       border-radius:14px;
       padding:10px 12px;
@@ -572,7 +554,6 @@
       align-items:center;
       gap:10px;
     }
-
     .dz-value:empty::before{
       content: attr(data-empty);
       color: rgba(71,85,105,0.8);
@@ -583,6 +564,7 @@
       background: rgba(14,165,164,0.08);
     }
 
+    /* Chips inside dropzones can wrap (prevents pill overflow) */
     .placed-chip{
       display:inline-flex;
       align-items:center;
@@ -594,6 +576,11 @@
       cursor:grab;
       font-weight:900;
       color: var(--ink);
+
+      max-width: 100%;
+      flex-wrap: wrap;
+      white-space: normal;
+      line-height: 1.2;
     }
 
     .remove-x{
@@ -607,6 +594,7 @@
       align-items:center;
       justify-content:center;
       background: rgba(15,23,42,0.02);
+      flex: 0 0 auto;
     }
 
     .loop-example, .science-prompt, .loop-flow{
@@ -621,13 +609,15 @@
       color: var(--ink);
     }
 
-    /* circle layout */
+    /* ==== KEY FIX: bigger ring + more spacing ==== */
     .loop-ring{
       position: relative;
       width: 100%;
-      height: 340px;
-      min-height: 340px;
+      height: 400px;          /* taller */
+      min-height: 400px;
       margin-top: 6px;
+      padding: 12px;          /* gives breathing room */
+      box-sizing: border-box;
     }
 
     .loop-ring svg{
@@ -639,6 +629,7 @@
       overflow: visible;
     }
 
+    /* ==== KEY FIX: push left/right further outward ==== */
     .dz-top{
       position:absolute;
       left:50%;
@@ -647,7 +638,7 @@
     }
     .dz-right{
       position:absolute;
-      right: 6px;
+      right: 22px;            /* farther right */
       top:50%;
       transform: translateY(-50%);
     }
@@ -659,7 +650,7 @@
     }
     .dz-left{
       position:absolute;
-      left: 6px;
+      left: 22px;             /* farther left */
       top:50%;
       transform: translateY(-50%);
     }
@@ -668,6 +659,7 @@
       .loop-ring{
         height: 520px;
         min-height: 520px;
+        padding: 0;
       }
       .dropzone{ width: 100%; max-width: 100%; }
       .dz-top, .dz-right, .dz-bottom, .dz-left{
@@ -684,7 +676,6 @@
       gap:12px;
       margin-top:14px;
     }
-
     @media (max-width: 980px){
       .reflection-grid{ grid-template-columns:1fr; }
     }
