@@ -7,11 +7,9 @@
 
   <style>
     :root{
-      /* Forest background */
       --forest1:#143426;
       --forest2:#0f2a1f;
 
-      /* Paper UI */
       --paper:#ffffff;
       --paper2:#f7fafc;
       --ink:#0f172a;
@@ -36,7 +34,7 @@
         radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,0.06), transparent 60%),
         radial-gradient(900px 700px at 85% 35%, rgba(255,255,255,0.05), transparent 62%),
         linear-gradient(180deg, var(--forest1), var(--forest2));
-      background-attachment: fixed; /* consistent background as you scroll */
+      background-attachment: fixed;
     }
 
     header{
@@ -80,7 +78,6 @@
       box-sizing: border-box;
     }
 
-    /* Cards / sections */
     .section{ margin: 16px 0; }
 
     .card{
@@ -176,7 +173,6 @@
       white-space: pre-wrap;
     }
 
-    /* Dropdowns */
     details.dropdown{
       margin-top: 14px;
       border: 1px solid rgba(15,23,42,0.14);
@@ -215,7 +211,6 @@
       color: var(--ink);
     }
 
-    /* Buttons */
     .choice-block{
       margin-top: 14px;
       padding: 12px 12px;
@@ -279,7 +274,6 @@
       color: var(--ink);
     }
 
-    /* Journal */
     .journal{
       margin-top: 14px;
       padding: 12px 12px;
@@ -335,7 +329,6 @@
       color: var(--muted);
     }
 
-    /* Resume widget */
     .resume-widget{
       position: fixed;
       top: 10px;
@@ -370,7 +363,6 @@
       line-height: 1.35;
     }
 
-    /* Modal */
     .modal-backdrop{
       position: fixed;
       inset: 0;
@@ -383,7 +375,7 @@
     }
     .modal-backdrop.show{ display:flex; }
     .modal{
-      width: min(520px, 100%);
+      width: min(560px, 100%);
       background: rgba(255,255,255,0.98);
       border: 1px solid rgba(15,23,42,0.16);
       border-radius: 16px;
@@ -418,7 +410,19 @@
       outline:none;
     }
 
-    /* Export bar */
+    /* NEW: mini instruction block inside modal */
+    .resume-help{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(14,165,164,0.35);
+      background: rgba(14,165,164,0.08);
+      color: var(--ink);
+      line-height: 1.35;
+      font-size: 12px;
+    }
+    .resume-help strong{ font-weight: 900; }
+
     .export-bar{
       position: fixed;
       left: 0;
@@ -441,6 +445,23 @@
       box-sizing:border-box;
     }
 
+    /* NEW: Make export button stand out */
+    #exportBtn{
+      padding: 12px 16px;
+      font-size: 15px;
+      border-radius: 14px;
+      border: 1px solid rgba(14,165,164,0.75);
+      background: rgba(14,165,164,0.22);
+      color: #052a2a;
+      box-shadow:
+        0 10px 24px rgba(0,0,0,0.18),
+        0 0 0 3px rgba(14,165,164,0.12);
+    }
+    #exportBtn:hover{
+      background: rgba(14,165,164,0.28);
+      border-color: rgba(14,165,164,0.95);
+    }
+
     .note{
       color: rgba(15,23,42,0.65);
       font-size: 12px;
@@ -448,7 +469,7 @@
       line-height: 1.35;
     }
 
-    /* ===== Feedback Loop Interactive ===== */
+    /* ===== Feedback Loop Interactive (unchanged) ===== */
     .journal-card{
       border:1px solid rgba(15,23,42,0.14);
       border-radius:16px;
@@ -504,13 +525,12 @@
       border-radius:14px;
       padding:14px;
       background: rgba(2,6,23,0.02);
-      min-height: 520px; /* more room so no overlap */
+      min-height: 520px;
       overflow: visible;
       position: relative;
       box-sizing: border-box;
     }
 
-    /* Slightly smaller dropzones + more ring space = no overlap */
     .dropzone{
       width: 230px;
       border:1px dashed rgba(15,23,42,0.28);
@@ -533,7 +553,7 @@
       display:flex;
       align-items:center;
       gap:10px;
-      flex-wrap: wrap; /* chips wrap instead of smashing */
+      flex-wrap: wrap;
     }
 
     .dz-value:empty::before{ content: attr(data-empty); color: rgba(71,85,105,0.7); }
@@ -594,7 +614,7 @@
     .loop-ring{
       position: relative;
       width: 100%;
-      height: 420px;   /* bigger ring = more separation */
+      height: 420px;
       min-height: 420px;
       margin-top: 6px;
     }
@@ -728,6 +748,13 @@
         <div class="codebox">
           <input class="code" id="resumeCode" type="text" readonly value="" />
           <button class="btn" id="copyCodeBtn" type="button">Copy</button>
+        </div>
+
+        <!-- NEW HELP TEXT -->
+        <div class="resume-help">
+          <strong>When you come back:</strong>
+          open this same lesson, paste your Resume Code into the box on the right (“Paste Resume Code Here”),
+          then click <strong>Resume</strong> to restore your progress.
         </div>
 
         <div class="small-label">Status</div>
