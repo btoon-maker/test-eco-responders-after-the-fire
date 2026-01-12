@@ -397,9 +397,9 @@ function renderAll(){
   if(!lessonEl) return;
   lessonEl.innerHTML = "";
 
-  state.revealed.forEach((sectionId, idx) => {
+  state.revealed.forEach((sectionId) => {
     const sec = SCRIPT.sections.find(s => s.id === sectionId);
-    if(sec) lessonEl.appendChild(renderSection(sec, idx));
+    if(sec) lessonEl.appendChild(renderSection(sec));
   });
 
   if(imagesNoteEl){
@@ -648,7 +648,6 @@ function renderChoice(choiceBlock){
   return container;
 }
 
-// scroll to TOP of the newly revealed section
 function revealSection(sectionId, shouldScroll=false){
   const wasPresent = state.revealed.includes(sectionId);
 
@@ -663,7 +662,6 @@ function revealSection(sectionId, shouldScroll=false){
       const target = document.querySelector(`.section[data-section-id="${sectionId}"]`);
       if(target){
         target.scrollIntoView({ behavior: "smooth", block: "start" });
-        // small offset for sticky header
         window.scrollBy(0, -90);
       }
     }, 60);
