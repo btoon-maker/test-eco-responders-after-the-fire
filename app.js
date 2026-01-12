@@ -239,7 +239,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
   </div>
 
   <div class="loop-layout">
-    <!-- Word bank -->
     <aside class="word-bank" aria-label="Word bank">
       <h3><span class="hl-yellow">Word Bank</span></h3>
       <div class="chip-bank" id="chipBank">
@@ -259,7 +258,6 @@ Nearby, houses with metal roofs stand untouched; those with wood shingles are go
       </p>
     </aside>
 
-    <!-- Loop drop zones -->
     <div class="loop-canvas" aria-label="Feedback loop canvas">
       <div class="loop-ring" aria-label="Feedback loop ring">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
@@ -375,7 +373,6 @@ function findChoiceParentSectionId(choiceKey){
         return sec.id;
       }
     }
-  }
   return null;
 }
 
@@ -408,7 +405,6 @@ function renderSection(sec, idx){
 
   const card = document.createElement("div");
   card.className = "card";
-  // Background is handled purely by CSS for consistency.
 
   const head = document.createElement("div");
   head.className = "section-head";
@@ -772,7 +768,6 @@ function encodeStateToCode(s){
 function decodeStateFromCode(code){
   try{
     const json = LZString.decompressFromEncodedURIComponent(code);
-;
     if(!json) return null;
     return JSON.parse(json);
   }catch(e){
@@ -781,7 +776,6 @@ function decodeStateFromCode(code){
 }
 
 function updateResumeArtifacts(){
-  // QR REMOVED: Resume Code only
   const code = encodeStateToCode(state);
   resumeCodeEl.value = code;
 }
